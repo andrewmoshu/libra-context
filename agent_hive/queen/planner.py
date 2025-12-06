@@ -3,9 +3,13 @@
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, TYPE_CHECKING
 import json
 import logging
+import uuid
+
+if TYPE_CHECKING:
+    from google.adk.agents import Agent
 
 logger = logging.getLogger(__name__)
 
@@ -114,12 +118,69 @@ class StrategicPlanner:
     - Break down goals into tasks
     - Prioritize task queue
     - Allocate resources to tasks
+    - LLM-powered intelligent task generation
     """
 
-    def __init__(self):
+    # Task templates for each strategy type and drone type combination
+    TASK_TEMPLATES = {
+        StrategyType.EXPAND: {
+            "researcher": [
+                "Research market opportunities for {goal}",
+                "Identify target customer segments for {goal}",
+                "Analyze competitor landscape for {goal}",
+            ],
+            "analyst": [
+                "Calculate ROI potential for {goal}",
+                "Assess risks and mitigation strategies for {goal}",
+            ],
+            "builder": [
+                "Create prototype/MVP for {goal}",
+                "Build landing page or documentation for {goal}",
+            ],
+            "seller": [
+                "Create marketing strategy for {goal}",
+                "Identify potential sales channels for {goal}",
+            ],
+        },
+        StrategyType.OPTIMIZE: {
+            "analyst": [
+                "Analyze current performance metrics for {goal}",
+                "Identify optimization opportunities for {goal}",
+            ],
+            "worker": [
+                "Implement optimization improvements for {goal}",
+            ],
+        },
+        StrategyType.CONSOLIDATE: {
+            "analyst": [
+                "Evaluate current resource allocation for {goal}",
+            ],
+            "worker": [
+                "Consolidate and streamline processes for {goal}",
+            ],
+        },
+        StrategyType.PIVOT: {
+            "researcher": [
+                "Research alternative directions for {goal}",
+            ],
+            "analyst": [
+                "Compare pivot options and outcomes for {goal}",
+            ],
+        },
+    }
+
+    def __init__(self, model: Optional[str] = None):
+        """
+        Initialize the strategic planner.
+
+        Args:
+            model: Optional LLM model for intelligent task generation
+        """
         self.goals: Dict[str, StrategicGoal] = {}
         self.task_queue: List[Task] = []
         self.completed_tasks: List[Task] = []
+        self.model = model
+        self._task_generator: Optional["Agent"] = None
 
     def add_goal(self, goal: StrategicGoal) -> None:
         """Add a strategic goal."""
@@ -209,54 +270,173 @@ class StrategicPlanner:
             "by_status": by_status,
         }
 
-    def generate_tasks_for_goal(self, goal: StrategicGoal) -> List[Task]:
+    def generate_tasks_for_goal(
+        self,
+        goal: StrategicGoal,
+        context: Optional[Dict[str, Any]] = None,
+    ) -> List[Task]:
         """
-        Generate tasks to achieve a goal.
+        Generate tasks to achieve a goal using templates and optional LLM enhancement.
 
-        This is a template - actual implementation will use LLM.
+        Args:
+            goal: The strategic goal to generate tasks for
+            context: Optional context for task generation (skillbook insights, etc.)
+
+        Returns:
+            List of tasks to achieve the goal
         """
-        import uuid
+        tasks = []
+        templates = self.TASK_TEMPLATES.get(goal.strategy_type, {})
 
+        # Generate tasks from templates
+        previous_task_id = None
+        for drone_type, task_templates in templates.items():
+            for i, template in enumerate(task_templates):
+                task_id = str(uuid.uuid4())[:8]
+                description = template.format(goal=goal.description)
+
+                # Add context if provided
+                if context:
+                    description += f"\n\nContext: {json.dumps(context, indent=2)}"
+
+                task = Task(
+                    task_id=task_id,
+                    title=f"{drone_type.title()}: {goal.title}",
+                    description=description,
+                    required_drone_type=drone_type,
+                    priority=goal.priority,
+                    estimated_time=self._estimate_time(drone_type),
+                    goal_id=goal.goal_id,
+                    dependencies=[previous_task_id] if previous_task_id and i > 0 else [],
+                )
+                tasks.append(task)
+
+                # Chain dependencies within same drone type
+                if i == len(task_templates) - 1:
+                    previous_task_id = task_id
+
+        return tasks
+
+    def _estimate_time(self, drone_type: str) -> int:
+        """Estimate task time based on drone type."""
+        time_estimates = {
+            "researcher": 30,
+            "analyst": 25,
+            "builder": 60,
+            "seller": 45,
+            "worker": 20,
+        }
+        return time_estimates.get(drone_type, 30)
+
+    def create_opportunity_tasks(
+        self,
+        opportunity_name: str,
+        opportunity_score: int,
+        revenue_estimate: float,
+    ) -> List[Task]:
+        """
+        Create a sequence of tasks to pursue a business opportunity.
+
+        Args:
+            opportunity_name: Name of the opportunity
+            opportunity_score: Score from analyst (0-100)
+            revenue_estimate: Estimated revenue potential
+
+        Returns:
+            List of tasks in execution order
+        """
         tasks = []
 
-        # Default task generation based on strategy type
-        if goal.strategy_type == StrategyType.EXPAND:
-            tasks.append(
-                Task(
-                    task_id=str(uuid.uuid4())[:8],
-                    title=f"Research: {goal.title}",
-                    description=f"Research opportunities for: {goal.description}",
-                    required_drone_type="researcher",
-                    priority=goal.priority,
-                    estimated_time=30,
-                    goal_id=goal.goal_id,
-                )
+        # Only pursue opportunities with score >= 60
+        if opportunity_score < 60:
+            logger.info(
+                f"Skipping opportunity '{opportunity_name}' (score {opportunity_score} < 60)"
             )
-            tasks.append(
-                Task(
-                    task_id=str(uuid.uuid4())[:8],
-                    title=f"Build: {goal.title}",
-                    description=f"Create deliverables for: {goal.description}",
-                    required_drone_type="builder",
-                    priority=goal.priority,
-                    estimated_time=60,
-                    goal_id=goal.goal_id,
-                    dependencies=[tasks[0].task_id],
-                )
-            )
+            return tasks
 
-        elif goal.strategy_type == StrategyType.OPTIMIZE:
-            tasks.append(
-                Task(
-                    task_id=str(uuid.uuid4())[:8],
-                    title=f"Analyze: {goal.title}",
-                    description=f"Analyze current state for: {goal.description}",
-                    required_drone_type="worker",
-                    priority=goal.priority,
-                    estimated_time=20,
-                    goal_id=goal.goal_id,
-                )
+        priority = Priority.HIGH if opportunity_score >= 80 else Priority.MEDIUM
+
+        # Phase 1: Deep research
+        research_task = Task(
+            task_id=str(uuid.uuid4())[:8],
+            title=f"Deep dive: {opportunity_name}",
+            description=(
+                f"Conduct in-depth research on '{opportunity_name}'.\n"
+                f"Opportunity Score: {opportunity_score}/100\n"
+                f"Revenue Estimate: ${revenue_estimate:,.2f}\n\n"
+                "Research requirements:\n"
+                "1. Validate market size and demand\n"
+                "2. Identify top 3 competitors\n"
+                "3. Document customer pain points\n"
+                "4. Outline technical requirements"
+            ),
+            required_drone_type="researcher",
+            priority=priority,
+            estimated_time=45,
+            context={"opportunity_score": opportunity_score, "revenue_estimate": revenue_estimate},
+        )
+        tasks.append(research_task)
+
+        # Phase 2: Financial analysis
+        analysis_task = Task(
+            task_id=str(uuid.uuid4())[:8],
+            title=f"Financial analysis: {opportunity_name}",
+            description=(
+                f"Create detailed financial projections for '{opportunity_name}'.\n"
+                "Analysis requirements:\n"
+                "1. Cost breakdown (development, marketing, operations)\n"
+                "2. Revenue projections (6mo, 12mo, 24mo)\n"
+                "3. Break-even analysis\n"
+                "4. Risk-adjusted ROI calculation"
+            ),
+            required_drone_type="analyst",
+            priority=priority,
+            estimated_time=30,
+            dependencies=[research_task.task_id],
+            context={"opportunity_score": opportunity_score, "revenue_estimate": revenue_estimate},
+        )
+        tasks.append(analysis_task)
+
+        # Phase 3: Build MVP (only for high-scoring opportunities)
+        if opportunity_score >= 75:
+            build_task = Task(
+                task_id=str(uuid.uuid4())[:8],
+                title=f"Build MVP: {opportunity_name}",
+                description=(
+                    f"Create minimum viable product for '{opportunity_name}'.\n"
+                    "Build requirements:\n"
+                    "1. Core functionality implementation\n"
+                    "2. Basic documentation\n"
+                    "3. Simple landing page or demo\n"
+                    "4. Initial pricing structure"
+                ),
+                required_drone_type="builder",
+                priority=priority,
+                estimated_time=120,
+                dependencies=[analysis_task.task_id],
+                context={"opportunity_score": opportunity_score, "revenue_estimate": revenue_estimate},
             )
+            tasks.append(build_task)
+
+            # Phase 4: Go-to-market
+            market_task = Task(
+                task_id=str(uuid.uuid4())[:8],
+                title=f"Launch: {opportunity_name}",
+                description=(
+                    f"Execute go-to-market strategy for '{opportunity_name}'.\n"
+                    "Launch requirements:\n"
+                    "1. Create marketing materials\n"
+                    "2. Identify initial target customers\n"
+                    "3. Set up sales funnel\n"
+                    "4. Track initial metrics"
+                ),
+                required_drone_type="seller",
+                priority=priority,
+                estimated_time=60,
+                dependencies=[build_task.task_id],
+                context={"opportunity_score": opportunity_score, "revenue_estimate": revenue_estimate},
+            )
+            tasks.append(market_task)
 
         return tasks
 
