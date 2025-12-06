@@ -194,13 +194,13 @@ async def run_demo_hive():
     logger.info("AGENT HIVE DEMONSTRATION")
     logger.info("=" * 60)
 
-    # Create configuration with all drone types
+    # Create configuration with all drone types (Gemini-only)
     config = HiveConfig(
         hive_name="DemoHive",
         llm=LLMConfig(
             primary_model="gemini-2.5-flash",
             fast_model="gemini-2.5-flash",
-            ace_model="gpt-4o-mini",
+            ace_model="gemini/gemini-2.0-flash",
         ),
         replication=ReplicationConfig(
             initial_workers=1,
