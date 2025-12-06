@@ -421,6 +421,7 @@ async def ingest_file(
     tags: Optional[str] = Query(None, description="Comma-separated tags"),
 ):
     """Ingest an uploaded file."""
+    import re
     import tempfile
 
     service = get_service()
@@ -432,19 +433,29 @@ async def ingest_file(
 
     tag_list = [t.strip() for t in tags.split(",")] if tags else []
 
-    # Save to temp file
-    with tempfile.NamedTemporaryFile(
-        suffix=Path(file.filename or "file").suffix,
-        delete=False,
-    ) as tmp:
-        content = await file.read()
-        tmp.write(content)
-        tmp_path = Path(tmp.name)
+    # Sanitize file extension to prevent path traversal or injection
+    filename = file.filename or "file.txt"
+    # Extract only alphanumeric extension, max 10 chars
+    suffix_match = re.search(r'\.([a-zA-Z0-9]{1,10})$', filename)
+    suffix = f".{suffix_match.group(1)}" if suffix_match else ".txt"
 
+    # Save to temp file
+    tmp_path = None
     try:
+        with tempfile.NamedTemporaryFile(
+            suffix=suffix,
+            delete=False,
+        ) as tmp:
+            content = await file.read()
+            tmp.write(content)
+            tmp_path = Path(tmp.name)
+
         contexts = service.ingest_file(tmp_path, context_type, tag_list)
+    except Exception as e:
+        raise HTTPException(500, f"Failed to ingest file: {str(e)}")
     finally:
-        tmp_path.unlink()
+        if tmp_path and tmp_path.exists():
+            tmp_path.unlink()
 
     return [
         ContextResponse(
