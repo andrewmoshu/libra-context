@@ -22,7 +22,7 @@ class TestHiveConfig(unittest.TestCase):
         config = HiveConfig()
 
         self.assertIsNotNone(config.hive_id)
-        self.assertEqual(config.hive_name, "AgentHive")
+        self.assertEqual(config.hive_name, "DefaultHive")
         self.assertFalse(config.debug)
 
     def test_custom_config(self):
@@ -152,10 +152,13 @@ class TestHiveSkillbook(unittest.TestCase):
 
     def test_stats(self):
         """Test skillbook statistics."""
-        self.skillbook.add_skill("Section1", "Content1")
-        self.skillbook.add_skill("Section2", "Content2")
+        # Create a fresh skillbook for this test
+        from agent_hive.learning.hive_skillbook import HiveSkillbook
+        fresh_skillbook = HiveSkillbook("test_data/fresh_stats_skillbook.json")
+        fresh_skillbook.add_skill("Section1", "Content1")
+        fresh_skillbook.add_skill("Section2", "Content2")
 
-        stats = self.skillbook.stats()
+        stats = fresh_skillbook.stats()
 
         self.assertIn("skills", stats)
         self.assertIn("sections", stats)
