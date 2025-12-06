@@ -146,7 +146,6 @@ class BaseDrone(ABC):
 
         # ADK components - initialized lazily
         self._agent: Optional[Agent] = None
-        self._session_service: Optional[InMemorySessionService] = None
         self._runner: Optional[InMemoryRunner] = None
 
         # Callbacks
@@ -186,11 +185,9 @@ class BaseDrone(ABC):
             tools=self.tools,
         )
 
-        self._session_service = InMemorySessionService()
         self._runner = InMemoryRunner(
             agent=self._agent,
             app_name=f"hive_{self.hive_id or 'default'}",
-            session_service=self._session_service,
         )
 
     async def execute(self, task: str, context: Optional[Dict[str, Any]] = None) -> TaskResult:
@@ -227,21 +224,33 @@ class BaseDrone(ABC):
                 full_prompt = f"Context:\n{context_str}\n\nTask: {task}"
 
             # Create a session for this task
-            session = await self._session_service.create_session(
-                app_name=f"hive_{self.hive_id or 'default'}",
-                user_id=f"drone_{self.drone_id}",
+            user_id = f"drone_{self.drone_id}"
+            app_name = f"hive_{self.hive_id or 'default'}"
+            session = await self._runner.session_service.create_session(
+                app_name=app_name,
+                user_id=user_id,
             )
 
-            # Execute via runner
-            response = await self._runner.run_async(
-                user_id=f"drone_{self.drone_id}",
-                session_id=session.id,
-                new_message=full_prompt,
+            # Create message content
+            message = types.Content(
+                role="user",
+                parts=[types.Part.from_text(text=full_prompt)]
             )
+
+            # Execute via runner and collect response
+            response_text = ""
+            async for event in self._runner.run_async(
+                user_id=user_id,
+                session_id=session.id,
+                new_message=message,
+            ):
+                if event.is_final_response() and event.content and event.content.parts:
+                    response_text = event.content.parts[0].text or ""
+                    break
 
             # Extract response
             result.success = True
-            result.output = response.content if hasattr(response, 'content') else str(response)
+            result.output = response_text
 
         except Exception as e:
             logger.error(f"Task {task_id} failed: {e}")
