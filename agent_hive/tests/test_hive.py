@@ -152,9 +152,17 @@ class TestHiveSkillbook(unittest.TestCase):
 
     def test_stats(self):
         """Test skillbook statistics."""
-        # Create a fresh skillbook for this test
+        # Create a fresh skillbook for this test with a unique path
+        import os
+        import uuid
         from agent_hive.learning.hive_skillbook import HiveSkillbook
-        fresh_skillbook = HiveSkillbook("test_data/fresh_stats_skillbook.json")
+        test_path = f"test_data/fresh_stats_skillbook_{uuid.uuid4().hex[:8]}.json"
+
+        # Ensure no stale file exists
+        if os.path.exists(test_path):
+            os.remove(test_path)
+
+        fresh_skillbook = HiveSkillbook(test_path)
         fresh_skillbook.add_skill("Section1", "Content1")
         fresh_skillbook.add_skill("Section2", "Content2")
 
@@ -163,6 +171,10 @@ class TestHiveSkillbook(unittest.TestCase):
         self.assertIn("skills", stats)
         self.assertIn("sections", stats)
         self.assertEqual(stats["skills"], 2)
+
+        # Cleanup
+        if os.path.exists(test_path):
+            os.remove(test_path)
 
 
 class TestTaskResult(unittest.TestCase):
