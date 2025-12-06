@@ -176,7 +176,7 @@ class TestLibraConfig:
         assert config.log_level == "info"
         assert config.librarian.mode == LibrarianMode.HYBRID
         assert config.embedding.provider == "gemini"
-        assert config.embedding.model == "text-embedding-004"
+        assert config.embedding.model == "gemini-embedding-001"
         assert config.defaults.token_budget == 2000
         assert config.defaults.chunk_size == 512
 
