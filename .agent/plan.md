@@ -67,7 +67,7 @@ Building libra - an intelligent context orchestration platform for AI agents usi
 - ✅ File ingestion (markdown, text)
 - ✅ Directory ingestion with .gitignore support
 - ✅ Token budget management
-- ⬜ Basic Web UI (optional, deferred)
+- ⬜ Basic Web UI
 
 ### P2 (Nice to Have) - Partial
 - ⬜ HTTP mode for MCP

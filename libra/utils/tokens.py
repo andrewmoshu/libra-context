@@ -1,12 +1,13 @@
 """Token counting utilities for libra."""
 
 import re
+from typing import Any
 
 # Try to import tiktoken for accurate counting, fall back to estimation
 try:
     import tiktoken
 
-    _ENCODING = tiktoken.get_encoding("cl100k_base")
+    _ENCODING: Any = tiktoken.get_encoding("cl100k_base")
     _HAS_TIKTOKEN = True
 except ImportError:
     _ENCODING = None
