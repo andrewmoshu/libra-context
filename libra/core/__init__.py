@@ -1,16 +1,42 @@
 """Core libra components: models, config, and exceptions."""
 
-from libra.core.models import Context, ContextType, AuditEntry, Agent
+from libra.core.models import (
+    Agent,
+    AuditEntry,
+    Context,
+    ContextRequest,
+    ContextResponse,
+    ContextType,
+    LibrarianMode,
+    RequestSource,
+    ScoredContext,
+)
 from libra.core.config import LibraConfig
-from libra.core.exceptions import LibraError, ContextNotFoundError, EmbeddingError
+from libra.core.exceptions import (
+    ContextNotFoundError,
+    EmbeddingError,
+    IngestionError,
+    LibraError,
+    StorageError,
+)
 
 __all__ = [
-    "Context",
-    "ContextType",
-    "AuditEntry",
+    # Models
     "Agent",
+    "AuditEntry",
+    "Context",
+    "ContextRequest",
+    "ContextResponse",
+    "ContextType",
+    "LibrarianMode",
+    "RequestSource",
+    "ScoredContext",
+    # Config
     "LibraConfig",
-    "LibraError",
+    # Exceptions
     "ContextNotFoundError",
     "EmbeddingError",
+    "IngestionError",
+    "LibraError",
+    "StorageError",
 ]
