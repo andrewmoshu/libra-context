@@ -8,6 +8,13 @@ from agent_hive.monetization.strategies import (
     ValueBasedPricing,
     CompetitivePricing,
 )
+from agent_hive.monetization.opportunities import (
+    Opportunity,
+    OpportunityStatus,
+    OpportunityCategory,
+    ServiceTemplate,
+    OpportunityManager,
+)
 
 __all__ = [
     "Treasury",
@@ -20,4 +27,9 @@ __all__ = [
     "CostPlusPricing",
     "ValueBasedPricing",
     "CompetitivePricing",
+    "Opportunity",
+    "OpportunityStatus",
+    "OpportunityCategory",
+    "ServiceTemplate",
+    "OpportunityManager",
 ]
