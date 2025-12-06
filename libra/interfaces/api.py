@@ -163,7 +163,7 @@ def get_service() -> LibraService:
 
 
 # CORS middleware (disabled by default, can be enabled in config)
-def setup_cors(config: LibraConfig):
+def setup_cors(config: LibraConfig) -> None:
     """Setup CORS if enabled in config."""
     if config.server.enable_cors:
         app.add_middleware(
@@ -184,7 +184,7 @@ def list_contexts(
     tags: Optional[str] = Query(None, description="Comma-separated tags to filter"),
     limit: int = Query(100, ge=1, le=1000, description="Maximum results"),
     offset: int = Query(0, ge=0, description="Pagination offset"),
-):
+) -> list[ContextResponse]:
     """List contexts with optional filtering."""
     service = get_service()
 
@@ -216,7 +216,7 @@ def list_contexts(
 
 
 @app.post("/api/v1/contexts", response_model=ContextResponse, status_code=201, tags=["Contexts"])
-def create_context(request: ContextCreate):
+def create_context(request: ContextCreate) -> ContextResponse:
     """Create a new context."""
     service = get_service()
 
@@ -246,7 +246,7 @@ def create_context(request: ContextCreate):
 
 
 @app.get("/api/v1/contexts/{context_id}", response_model=ContextResponse, tags=["Contexts"])
-def get_context(context_id: str):
+def get_context(context_id: str) -> ContextResponse:
     """Get a specific context by ID."""
     service = get_service()
 
@@ -269,7 +269,7 @@ def get_context(context_id: str):
 
 
 @app.put("/api/v1/contexts/{context_id}", response_model=ContextResponse, tags=["Contexts"])
-def update_context(context_id: str, request: ContextUpdate):
+def update_context(context_id: str, request: ContextUpdate) -> ContextResponse:
     """Update an existing context."""
     service = get_service()
 
@@ -296,7 +296,7 @@ def update_context(context_id: str, request: ContextUpdate):
 
 
 @app.delete("/api/v1/contexts/{context_id}", status_code=204, tags=["Contexts"])
-def delete_context(context_id: str):
+def delete_context(context_id: str) -> None:
     """Delete a context by ID."""
     service = get_service()
 
@@ -309,7 +309,7 @@ def delete_context(context_id: str):
 
 
 @app.post("/api/v1/query", response_model=QueryResponse, tags=["Query"])
-def query_context(request: QueryRequest):
+def query_context(request: QueryRequest) -> QueryResponse:
     """Get relevant context for a task.
 
     This is the main feature of libra - intelligent context selection.
@@ -353,7 +353,7 @@ def search_contexts(
     query: str = Query(..., min_length=1, description="Search query"),
     type: Optional[str] = Query(None, description="Filter by type"),
     limit: int = Query(50, ge=1, le=200, description="Maximum results"),
-):
+) -> list[SearchResult]:
     """Search contexts by semantic similarity."""
     service = get_service()
 
@@ -382,7 +382,7 @@ def search_contexts(
 
 
 @app.post("/api/v1/ingest/text", response_model=list[ContextResponse], tags=["Ingestion"])
-def ingest_text(request: IngestTextRequest):
+def ingest_text(request: IngestTextRequest) -> list[ContextResponse]:
     """Ingest raw text content."""
     service = get_service()
 
@@ -419,7 +419,7 @@ async def ingest_file(
     file: UploadFile = File(...),
     type: str = Query("knowledge", description="Context type"),
     tags: Optional[str] = Query(None, description="Comma-separated tags"),
-):
+) -> list[ContextResponse]:
     """Ingest an uploaded file."""
     import re
     import tempfile
@@ -474,7 +474,7 @@ async def ingest_file(
 
 
 @app.post("/api/v1/ingest/directory", response_model=dict, tags=["Ingestion"])
-def ingest_directory(request: IngestDirectoryRequest):
+def ingest_directory(request: IngestDirectoryRequest) -> dict[str, object]:
     """Ingest a local directory."""
     service = get_service()
 
@@ -506,7 +506,7 @@ def get_audit_log(
     agent_id: Optional[str] = Query(None, description="Filter by agent"),
     limit: int = Query(100, ge=1, le=1000),
     offset: int = Query(0, ge=0),
-):
+) -> list[AuditEntryResponse]:
     """Get audit log entries."""
     service = get_service()
 
@@ -528,7 +528,7 @@ def get_audit_log(
 
 
 @app.get("/api/v1/audit/stats", response_model=dict, tags=["Audit"])
-def get_audit_stats():
+def get_audit_stats() -> dict[str, int]:
     """Get audit statistics."""
     service = get_service()
     stats = service.get_stats()
@@ -542,7 +542,7 @@ def get_audit_stats():
 
 
 @app.get("/api/v1/health", response_model=HealthResponse, tags=["System"])
-def health_check():
+def health_check() -> HealthResponse:
     """Health check endpoint."""
     service = get_service()
 
@@ -554,7 +554,7 @@ def health_check():
 
 
 @app.get("/api/v1/stats", response_model=StatsResponse, tags=["System"])
-def get_stats():
+def get_stats() -> StatsResponse:
     """Get storage statistics."""
     service = get_service()
     stats = service.get_stats()
@@ -568,7 +568,7 @@ def get_stats():
 
 
 @app.get("/api/v1/config", response_model=dict, tags=["System"])
-def get_config():
+def get_config() -> dict[str, object]:
     """Get current configuration (safe fields only)."""
     service = get_service()
     config = service.config
@@ -587,7 +587,7 @@ def create_api_app() -> FastAPI:
     return app
 
 
-def run_server(host: str = "127.0.0.1", port: int = 8377):
+def run_server(host: str = "127.0.0.1", port: int = 8377) -> None:
     """Run the API server."""
     import uvicorn
 
