@@ -8,9 +8,9 @@ from typing import Any, Dict, List, Optional, Callable
 import uuid
 import logging
 
-from google.adk import Agent
+from google.adk.agents import Agent
 from google.adk.sessions import InMemorySessionService
-from google.adk.runners import Runner
+from google.adk.runners import InMemoryRunner
 
 logger = logging.getLogger(__name__)
 
@@ -143,7 +143,7 @@ class BaseDrone(ABC):
         # ADK components - initialized lazily
         self._agent: Optional[Agent] = None
         self._session_service: Optional[InMemorySessionService] = None
-        self._runner: Optional[Runner] = None
+        self._runner: Optional[InMemoryRunner] = None
 
         # Callbacks
         self._on_task_complete: Optional[Callable[[TaskResult], None]] = None
@@ -183,7 +183,7 @@ class BaseDrone(ABC):
         )
 
         self._session_service = InMemorySessionService()
-        self._runner = Runner(
+        self._runner = InMemoryRunner(
             agent=self._agent,
             app_name=f"hive_{self.hive_id or 'default'}",
             session_service=self._session_service,
