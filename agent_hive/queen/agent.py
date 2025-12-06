@@ -6,8 +6,7 @@ from typing import Any, Dict, List, Optional
 import logging
 import uuid
 
-from google.adk import Agent
-from google.adk.agents import SequentialAgent
+from google.adk.agents import Agent
 
 from agent_hive.queen.planner import StrategicPlanner, Task, StrategicGoal, Priority, StrategyType
 from agent_hive.queen.replicator import ReplicationManager, ReplicationMetrics
