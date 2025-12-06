@@ -199,9 +199,9 @@ class MarkdownIngestor(Ingestor):
         # Pattern to match headers (any level)
         header_pattern = re.compile(r"^(#{1,6})\s+(.+)$", re.MULTILINE)
 
-        sections = []
+        sections: list[tuple[str, str]] = []
         current_header = "Introduction"
-        current_content = []
+        current_content: list[str] = []
         current_level = 0
 
         lines = content.split("\n")
