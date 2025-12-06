@@ -1,0 +1,134 @@
+"""Gemini embedding provider using Google's Generative AI API."""
+
+import os
+from typing import Literal
+
+import google.generativeai as genai
+
+from libra.core.exceptions import EmbeddingError
+from libra.embedding.base import EmbeddingProvider
+
+
+TaskType = Literal[
+    "RETRIEVAL_QUERY",
+    "RETRIEVAL_DOCUMENT",
+    "SEMANTIC_SIMILARITY",
+    "CLASSIFICATION",
+    "CLUSTERING",
+]
+
+
+class GeminiEmbeddingProvider(EmbeddingProvider):
+    """Embedding provider using Google's Gemini API.
+
+    Uses text-embedding-004 model by default (768 dimensions).
+    Requires GOOGLE_AI_API_KEY environment variable.
+    """
+
+    def __init__(
+        self,
+        model: str = "models/text-embedding-004",
+        api_key: str | None = None,
+        output_dimensionality: int = 768,
+    ):
+        """Initialize the Gemini embedding provider.
+
+        Args:
+            model: The embedding model to use
+            api_key: Google AI API key (or use GOOGLE_AI_API_KEY env var)
+            output_dimensionality: Output vector dimensions (max 768 for text-embedding-004)
+        """
+        self.model = model
+        self._dimensions = output_dimensionality
+
+        # Configure the API
+        api_key = api_key or os.environ.get("GOOGLE_AI_API_KEY")
+        if not api_key:
+            raise EmbeddingError(
+                "GOOGLE_AI_API_KEY environment variable is required for Gemini embeddings"
+            )
+        genai.configure(api_key=api_key)
+
+    @property
+    def dimensions(self) -> int:
+        """Return the dimensionality of embeddings."""
+        return self._dimensions
+
+    def embed(
+        self,
+        text: str,
+        task_type: TaskType = "RETRIEVAL_DOCUMENT",
+    ) -> list[float]:
+        """Generate an embedding for a single text.
+
+        Args:
+            text: The text to embed
+            task_type: The task type for embedding optimization
+
+        Returns:
+            A list of floats representing the embedding vector
+        """
+        try:
+            result = genai.embed_content(
+                model=self.model,
+                content=text,
+                task_type=task_type,
+                output_dimensionality=self._dimensions,
+            )
+            return result["embedding"]
+        except Exception as e:
+            raise EmbeddingError(f"Failed to generate embedding: {e}", e)
+
+    def embed_batch(
+        self,
+        texts: list[str],
+        task_type: TaskType = "RETRIEVAL_DOCUMENT",
+    ) -> list[list[float]]:
+        """Generate embeddings for multiple texts.
+
+        Args:
+            texts: List of texts to embed
+            task_type: The task type for embedding optimization
+
+        Returns:
+            List of embedding vectors
+        """
+        if not texts:
+            return []
+
+        try:
+            result = genai.embed_content(
+                model=self.model,
+                content=texts,
+                task_type=task_type,
+                output_dimensionality=self._dimensions,
+            )
+            return result["embedding"]
+        except Exception as e:
+            raise EmbeddingError(f"Failed to generate batch embeddings: {e}", e)
+
+    def embed_query(self, query: str) -> list[float]:
+        """Generate an embedding for a query.
+
+        Uses RETRIEVAL_QUERY task type for better query matching.
+
+        Args:
+            query: The query text to embed
+
+        Returns:
+            A list of floats representing the embedding vector
+        """
+        return self.embed(query, task_type="RETRIEVAL_QUERY")
+
+    def embed_document(self, document: str) -> list[float]:
+        """Generate an embedding for a document.
+
+        Uses RETRIEVAL_DOCUMENT task type for better document indexing.
+
+        Args:
+            document: The document text to embed
+
+        Returns:
+            A list of floats representing the embedding vector
+        """
+        return self.embed(document, task_type="RETRIEVAL_DOCUMENT")
