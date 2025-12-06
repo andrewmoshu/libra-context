@@ -327,7 +327,7 @@ class LibraService:
         )
 
         # Step 4: Record access
-        context_ids = [sc.context.id for sc in selected]
+        context_ids: list[UUID | str] = [sc.context.id for sc in selected]
         if context_ids:
             self.store.record_access(context_ids)
 
