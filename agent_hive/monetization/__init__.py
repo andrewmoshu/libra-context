@@ -1,9 +1,11 @@
 """Monetization module for Agent Hive."""
 
 from agent_hive.monetization.treasury import Treasury, Transaction, TransactionType
-from agent_hive.monetization.products import ProductRegistry, Product, ServiceOffering
+from agent_hive.monetization.products import ProductRegistry, Product, ServiceOffering, ProductType, ProductStatus
 from agent_hive.monetization.strategies import (
     PricingStrategy,
+    PricingEngine,
+    PricingRecommendation,
     CostPlusPricing,
     ValueBasedPricing,
     CompetitivePricing,
@@ -23,7 +25,11 @@ __all__ = [
     "ProductRegistry",
     "Product",
     "ServiceOffering",
+    "ProductType",
+    "ProductStatus",
     "PricingStrategy",
+    "PricingEngine",
+    "PricingRecommendation",
     "CostPlusPricing",
     "ValueBasedPricing",
     "CompetitivePricing",
