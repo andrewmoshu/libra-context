@@ -1,6 +1,7 @@
 """Configuration management for libra."""
 
 import os
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -122,7 +123,7 @@ class LibraConfig(BaseModel):
 
     def _apply_env_overrides(self) -> "LibraConfig":
         """Apply environment variable overrides."""
-        env_mapping = {
+        env_mapping: dict[str, tuple[str, Callable[[str], Any]]] = {
             "LIBRA_DATA_DIR": ("data_dir", lambda x: Path(x)),
             "LIBRA_LOG_LEVEL": ("log_level", str),
             "LIBRA_LIBRARIAN_MODE": ("librarian.mode", LibrarianMode),
