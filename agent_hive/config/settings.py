@@ -17,8 +17,8 @@ class LLMConfig:
     # Fast model for simple tasks (Drones, routine operations)
     fast_model: str = "gemini-2.5-flash"
 
-    # ACE learning model (can be different provider)
-    ace_model: str = "gpt-4o-mini"
+    # ACE learning model (Gemini for hive-only operation)
+    ace_model: str = "gemini/gemini-2.0-flash"
 
     # API keys (loaded from environment if not provided)
     google_api_key: Optional[str] = None
@@ -197,7 +197,7 @@ class HiveConfig:
             llm=LLMConfig(
                 primary_model=llm_data.get("primary_model", "gemini-2.5-flash"),
                 fast_model=llm_data.get("fast_model", "gemini-2.5-flash"),
-                ace_model=llm_data.get("ace_model", "gpt-4o-mini"),
+                ace_model=llm_data.get("ace_model", "gemini/gemini-2.0-flash"),
             ),
             replication=ReplicationConfig(
                 min_queue_depth=replication_data.get("min_queue_depth", 10),
