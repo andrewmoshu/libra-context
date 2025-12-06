@@ -8,9 +8,12 @@ from typing import Any, Dict, List, Optional, Callable
 import uuid
 import logging
 
-from google.adk.agents import Agent
-from google.adk.sessions import InMemorySessionService
-from google.adk.runners import InMemoryRunner
+from google.adk.agents import llm_agent
+from google.adk import runners
+from google.genai import types
+
+Agent = llm_agent.LlmAgent
+InMemoryRunner = runners.InMemoryRunner
 
 logger = logging.getLogger(__name__)
 
