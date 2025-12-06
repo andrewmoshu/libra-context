@@ -52,6 +52,7 @@ class ReplicationConfig:
     initial_builders: int = 1
     initial_sellers: int = 0
     initial_researchers: int = 1
+    initial_analysts: int = 1
 
 
 @dataclass
@@ -157,6 +158,7 @@ class HiveConfig:
                 "initial_builders": self.replication.initial_builders,
                 "initial_sellers": self.replication.initial_sellers,
                 "initial_researchers": self.replication.initial_researchers,
+                "initial_analysts": self.replication.initial_analysts,
             },
             "learning": {
                 "skillbook_path": self.learning.skillbook_path,
@@ -208,6 +210,7 @@ class HiveConfig:
                 initial_builders=replication_data.get("initial_builders", 1),
                 initial_sellers=replication_data.get("initial_sellers", 0),
                 initial_researchers=replication_data.get("initial_researchers", 1),
+                initial_analysts=replication_data.get("initial_analysts", 1),
             ),
             learning=LearningConfig(
                 skillbook_path=learning_data.get(

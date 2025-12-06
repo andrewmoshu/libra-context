@@ -11,6 +11,7 @@ from agent_hive.drones.worker import WorkerDrone
 from agent_hive.drones.builder import BuilderDrone
 from agent_hive.drones.researcher import ResearcherDrone
 from agent_hive.drones.seller import SellerDrone
+from agent_hive.drones.analyst import AnalystDrone
 from agent_hive.config.settings import ReplicationConfig
 
 logger = logging.getLogger(__name__)
@@ -59,6 +60,7 @@ class ReplicationManager:
         DroneType.BUILDER: BuilderDrone,
         DroneType.RESEARCHER: ResearcherDrone,
         DroneType.SELLER: SellerDrone,
+        DroneType.ANALYST: AnalystDrone,
     }
 
     def __init__(self, config: ReplicationConfig, hive_id: str):
@@ -262,6 +264,11 @@ class ReplicationManager:
 
         for _ in range(self.config.initial_researchers):
             drone = self.spawn_drone(DroneType.RESEARCHER, model)
+            if drone:
+                spawned.append(drone)
+
+        for _ in range(self.config.initial_analysts):
+            drone = self.spawn_drone(DroneType.ANALYST, model)
             if drone:
                 spawned.append(drone)
 

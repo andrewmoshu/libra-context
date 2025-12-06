@@ -22,6 +22,7 @@ class DroneType(Enum):
     BUILDER = "builder"
     RESEARCHER = "researcher"
     SELLER = "seller"
+    ANALYST = "analyst"
 
 
 class DroneStatus(Enum):
