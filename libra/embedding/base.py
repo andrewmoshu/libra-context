@@ -49,3 +49,17 @@ class EmbeddingProvider(ABC):
             A list of floats representing the embedding vector
         """
         return self.embed(query)
+
+    def embed_document(self, document: str) -> list[float]:
+        """Generate an embedding for a document.
+
+        By default, this is the same as embed(), but some providers
+        may use different models/settings for document indexing.
+
+        Args:
+            document: The document text to embed
+
+        Returns:
+            A list of floats representing the embedding vector
+        """
+        return self.embed(document)
