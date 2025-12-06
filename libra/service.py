@@ -4,12 +4,15 @@ Coordinates all components to provide a unified interface for
 context storage, retrieval, and intelligent selection.
 """
 
+import logging
 import time
 from datetime import datetime
 from pathlib import Path
 from uuid import UUID
 
 from libra.core.config import LibraConfig
+
+logger = logging.getLogger("libra.service")
 from libra.core.exceptions import LibraError
 from libra.core.models import (
     AuditEntry,
@@ -62,6 +65,7 @@ class LibraService:
 
         # Ensure data directory exists
         self.config.ensure_data_dir()
+        logger.info(f"LibraService initialized with data_dir={self.config.data_dir}")
 
         # Initialize components
         self._store: ContextStore | None = None
@@ -165,6 +169,7 @@ class LibraService:
             context.embedding = self.embedding_provider.embed_document(content)
 
         self.store.add_context(context)
+        logger.debug(f"Added context {context.id} of type {context.type}")
         return context
 
     def get_context(self, context_id: UUID | str) -> Context:
@@ -346,6 +351,10 @@ class LibraService:
         )
         self.store.add_audit_entry(audit_entry)
 
+        logger.info(
+            f"Query completed: task='{task[:50]}...' contexts={len(selected)} "
+            f"tokens={tokens_used}/{max_tokens} latency={latency_ms}ms"
+        )
         return response
 
     # Ingestion
