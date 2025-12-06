@@ -1,0 +1,14 @@
+# Agent Hive Requirements
+
+# Core dependencies
+google-adk>=0.1.0
+pydantic>=2.0.0
+litellm>=1.0.0
+
+# ACE Framework (for learning)
+# Install from parent directory or PyPI:
+# pip install ace-framework
+
+# Optional: For full functionality
+# instructor  # Structured outputs
+# opik  # Observability
