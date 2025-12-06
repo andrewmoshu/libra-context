@@ -130,7 +130,7 @@ config = HiveConfig(
     hive_name="ProductionHive",
     llm=LLMConfig(
         primary_model="gemini-2.5-flash",
-        ace_model="gpt-4o-mini",
+        ace_model="gemini/gemini-2.0-flash",
     ),
 )
 
