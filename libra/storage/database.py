@@ -5,7 +5,7 @@ import sqlite3
 import struct
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Iterator
+from typing import Any, Iterator
 from uuid import UUID
 
 import sqlite_vec
@@ -498,8 +498,8 @@ class ContextStore:
             self._conn.close()
             self._conn = None
 
-    def __enter__(self):
+    def __enter__(self) -> "ContextStore":
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         self.close()
