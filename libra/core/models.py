@@ -1,11 +1,16 @@
 """Core data models for libra."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Optional
 from uuid import UUID, uuid4
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
+
+
+def utc_now() -> datetime:
+    """Return the current UTC time."""
+    return datetime.now(timezone.utc)
 
 
 class ContextType(str, Enum):
@@ -35,47 +40,45 @@ class LibrarianMode(str, Enum):
 class Context(BaseModel):
     """A discrete unit of information that might be useful to an AI agent."""
 
+    model_config = ConfigDict(use_enum_values=True)
+
     id: UUID = Field(default_factory=uuid4)
     type: ContextType
     content: str
     tags: list[str] = Field(default_factory=list)
     source: str = "manual"  # file path, "manual", URL
     embedding: Optional[list[float]] = None
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=utc_now)
+    updated_at: datetime = Field(default_factory=utc_now)
     accessed_at: Optional[datetime] = None
     access_count: int = 0
     metadata: dict = Field(default_factory=dict)
 
-    class Config:
-        use_enum_values = True
-
     def touch(self) -> None:
         """Update access timestamp and count."""
-        self.accessed_at = datetime.utcnow()
+        self.accessed_at = utc_now()
         self.access_count += 1
 
     def update_content(self, content: str) -> None:
         """Update content and timestamp."""
         self.content = content
-        self.updated_at = datetime.utcnow()
+        self.updated_at = utc_now()
 
 
 class ScoredContext(BaseModel):
     """A context with a relevance score."""
 
+    model_config = ConfigDict(use_enum_values=True)
+
     context: Context
     relevance_score: float = Field(ge=0.0, le=1.0)
-
-    class Config:
-        use_enum_values = True
 
 
 class AuditEntry(BaseModel):
     """Record of a context request and response."""
 
     id: UUID = Field(default_factory=uuid4)
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=utc_now)
     agent_id: Optional[str] = None
     task: str
     contexts_served: list[UUID] = Field(default_factory=list)
@@ -90,19 +93,20 @@ class AuditEntry(BaseModel):
 class Agent(BaseModel):
     """An AI agent that requests context from libra."""
 
+    model_config = ConfigDict(use_enum_values=True)
+
     id: str
     name: str
     description: Optional[str] = None
     default_budget: int = 2000
     allowed_types: Optional[list[ContextType]] = None
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-
-    class Config:
-        use_enum_values = True
+    created_at: datetime = Field(default_factory=utc_now)
 
 
 class ContextRequest(BaseModel):
     """A request for context from an agent."""
+
+    model_config = ConfigDict(use_enum_values=True)
 
     task: str
     max_tokens: int = 2000
@@ -110,18 +114,14 @@ class ContextRequest(BaseModel):
     tags: Optional[list[str]] = None
     agent_id: Optional[str] = None
 
-    class Config:
-        use_enum_values = True
-
 
 class ContextResponse(BaseModel):
     """Response containing selected contexts for a task."""
+
+    model_config = ConfigDict(use_enum_values=True)
 
     contexts: list[ScoredContext]
     tokens_used: int
     request_id: UUID = Field(default_factory=uuid4)
     librarian_mode: LibrarianMode = LibrarianMode.RULES
     explanation: Optional[str] = None
-
-    class Config:
-        use_enum_values = True

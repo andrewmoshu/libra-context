@@ -112,9 +112,14 @@ class RulesLibrarian(Librarian):
         recency_boost = 0.0
         if context.accessed_at:
             # Simple heuristic: if accessed in last 7 days, boost
-            from datetime import datetime, timedelta
+            from datetime import datetime, timedelta, timezone
 
-            if datetime.utcnow() - context.accessed_at < timedelta(days=7):
+            now = datetime.now(timezone.utc)
+            accessed = context.accessed_at
+            # Handle both naive and aware datetimes
+            if accessed.tzinfo is None:
+                accessed = accessed.replace(tzinfo=timezone.utc)
+            if now - accessed < timedelta(days=7):
                 recency_boost = 0.1
 
         # Access frequency boost

@@ -3,7 +3,7 @@
 import json
 import sqlite3
 import struct
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterator
 from uuid import UUID
@@ -349,7 +349,7 @@ class ContextStore:
 
     def record_access(self, context_ids: list[UUID | str]) -> None:
         """Record access to contexts (updates accessed_at and access_count)."""
-        now = datetime.utcnow().isoformat()
+        now = datetime.now(timezone.utc).isoformat()
         try:
             for context_id in context_ids:
                 self.conn.execute(
