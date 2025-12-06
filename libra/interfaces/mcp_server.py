@@ -18,7 +18,7 @@ from libra.service import LibraService
 # Create MCP server
 mcp = FastMCP(
     name="libra",
-    description="Intelligent Context Orchestration for AI Agents",
+    instructions="Intelligent Context Orchestration for AI Agents. Use get_context to retrieve relevant context for tasks, remember to save new context, search to find specific information, and forget to remove outdated context.",
 )
 
 # Global service instance
