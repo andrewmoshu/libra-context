@@ -1,6 +1,6 @@
 """Builder drone for creating products and services."""
 
-from typing import List, Callable
+from typing import List, Callable, Optional
 
 from agent_hive.drones.base import BaseDrone, DroneType
 from agent_hive.tools.code_tools import (
@@ -26,7 +26,12 @@ class BuilderDrone(BaseDrone):
     Best for: Creating deliverables that can be monetized.
     """
 
-    def __init__(self, model: str = "gemini-2.5-flash", name: str = None, hive_id: str = None):
+    def __init__(
+        self,
+        model: str = "gemini-2.5-flash",
+        name: Optional[str] = None,
+        hive_id: Optional[str] = None,
+    ):
         super().__init__(
             drone_type=DroneType.BUILDER,
             model=model,

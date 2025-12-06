@@ -1,6 +1,6 @@
 """Worker drone for general task execution."""
 
-from typing import List, Callable
+from typing import List, Callable, Optional
 
 from agent_hive.drones.base import BaseDrone, DroneType
 from agent_hive.tools.web_tools import web_search, fetch_url
@@ -21,7 +21,12 @@ class WorkerDrone(BaseDrone):
     Best for: Versatile tasks that don't require specialized skills.
     """
 
-    def __init__(self, model: str = "gemini-2.5-flash", name: str = None, hive_id: str = None):
+    def __init__(
+        self,
+        model: str = "gemini-2.5-flash",
+        name: Optional[str] = None,
+        hive_id: Optional[str] = None,
+    ):
         super().__init__(
             drone_type=DroneType.WORKER,
             model=model,

@@ -1,9 +1,9 @@
 """Seller drone for marketing and sales."""
 
-from typing import List, Callable
+from typing import List, Callable, Optional
 
 from agent_hive.drones.base import BaseDrone, DroneType
-from agent_hive.tools.web_tools import web_search, fetch_url
+from agent_hive.tools.web_tools import web_search, fetch_url, extract_contact_info
 from agent_hive.tools.code_tools import write_file, read_file
 from agent_hive.tools.file_tools import list_directory, create_directory
 
@@ -17,11 +17,17 @@ class SellerDrone(BaseDrone):
     - Customer communication
     - Sales process management
     - Pricing optimization
+    - Lead contact extraction
 
     Best for: Converting products into revenue.
     """
 
-    def __init__(self, model: str = "gemini-2.5-flash", name: str = None, hive_id: str = None):
+    def __init__(
+        self,
+        model: str = "gemini-2.5-flash",
+        name: Optional[str] = None,
+        hive_id: Optional[str] = None,
+    ):
         super().__init__(
             drone_type=DroneType.SELLER,
             model=model,
@@ -99,6 +105,7 @@ Your success means the hive grows and thrives."""
         return [
             web_search,
             fetch_url,
+            extract_contact_info,
             write_file,
             read_file,
             list_directory,
