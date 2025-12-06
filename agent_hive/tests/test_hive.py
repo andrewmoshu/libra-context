@@ -30,12 +30,12 @@ class TestHiveConfig(unittest.TestCase):
         config = HiveConfig(
             hive_name="TestHive",
             debug=True,
-            llm=LLMConfig(primary_model="gpt-4"),
+            llm=LLMConfig(primary_model="gemini-2.5-pro"),
         )
 
         self.assertEqual(config.hive_name, "TestHive")
         self.assertTrue(config.debug)
-        self.assertEqual(config.llm.primary_model, "gpt-4")
+        self.assertEqual(config.llm.primary_model, "gemini-2.5-pro")
 
 
 class TestDrones(unittest.TestCase):
@@ -43,10 +43,10 @@ class TestDrones(unittest.TestCase):
 
     def test_worker_drone_creation(self):
         """Test WorkerDrone initialization."""
-        drone = WorkerDrone(model="test-model", name="test-worker")
+        drone = WorkerDrone(model="gemini-2.5-flash", name="test-worker")
 
         self.assertEqual(drone.drone_type, DroneType.WORKER)
-        self.assertEqual(drone.model, "test-model")
+        self.assertEqual(drone.model, "gemini-2.5-flash")
         self.assertEqual(drone.name, "test-worker")
         self.assertEqual(drone.status, DroneStatus.IDLE)
         self.assertIsNotNone(drone.description)
