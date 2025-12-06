@@ -5,6 +5,8 @@ from agent_hive.tools.web_tools import (
     fetch_url,
     analyze_website,
     monitor_trends,
+    extract_contact_info,
+    compare_websites,
 )
 from agent_hive.tools.code_tools import (
     execute_python,
@@ -27,6 +29,8 @@ __all__ = [
     "fetch_url",
     "analyze_website",
     "monitor_trends",
+    "extract_contact_info",
+    "compare_websites",
     # Code tools
     "execute_python",
     "write_file",
