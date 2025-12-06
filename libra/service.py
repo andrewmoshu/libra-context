@@ -6,8 +6,10 @@ context storage, retrieval, and intelligent selection.
 
 import logging
 import time
+from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 from uuid import UUID
 
 from libra.core.config import LibraConfig
@@ -428,7 +430,7 @@ class LibraService:
         path: Path | str,
         context_type: ContextType = ContextType.KNOWLEDGE,
         tags: list[str] | None = None,
-        progress_callback=None,
+        progress_callback: Callable[[str, int, int], None] | None = None,
     ) -> list[Context]:
         """Ingest a directory recursively.
 
@@ -491,10 +493,10 @@ class LibraService:
             self._store.close()
             self._store = None
 
-    def __enter__(self):
+    def __enter__(self) -> "LibraService":
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         self.close()
 
 

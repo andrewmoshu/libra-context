@@ -68,13 +68,13 @@ Building libra - an intelligent context orchestration platform for AI agents usi
 - ✅ Directory ingestion with .gitignore support
 - ✅ Token budget management
 - ⬜ Basic Web UI
+- ⬜ Interactive chat mode
 
 ### P2 (Nice to Have) - Partial
 - ⬜ HTTP mode for MCP
 - ✅ Custom rules configuration
 - ⬜ Local fallback (sentence-transformers + Ollama)
 - ✅ Export/import functionality
-- ⬜ Interactive chat mode
 
 ## Technology Stack
 - Python 3.11+
