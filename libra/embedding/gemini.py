@@ -21,13 +21,15 @@ TaskType = Literal[
 class GeminiEmbeddingProvider(EmbeddingProvider):
     """Embedding provider using Google's Gemini API.
 
-    Uses text-embedding-004 model by default (768 dimensions).
+    Uses gemini-embedding-001 model by default (768 dimensions).
+    The new Gemini Embedding model supports up to 3072 dimensions but
+    we default to 768 for backward compatibility with sqlite-vec storage.
     Requires GOOGLE_AI_API_KEY environment variable.
     """
 
     def __init__(
         self,
-        model: str = "models/text-embedding-004",
+        model: str = "models/gemini-embedding-001",
         api_key: str | None = None,
         output_dimensionality: int = 768,
     ):
@@ -36,7 +38,7 @@ class GeminiEmbeddingProvider(EmbeddingProvider):
         Args:
             model: The embedding model to use
             api_key: Google AI API key (or use GOOGLE_AI_API_KEY env var)
-            output_dimensionality: Output vector dimensions (max 768 for text-embedding-004)
+            output_dimensionality: Output vector dimensions (max 3072 for gemini-embedding-001)
         """
         self.model = model
         self._dimensions = output_dimensionality

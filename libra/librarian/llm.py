@@ -48,13 +48,13 @@ Include ALL contexts in your response, even with score 0.0."""
 class GeminiLibrarian(Librarian):
     """LLM-based Librarian using Gemini for intelligent context selection.
 
-    Uses gemini-2.0-flash for fast, high-quality reasoning about
+    Uses gemini-2.5-flash for fast, high-quality reasoning about
     context relevance. Returns structured JSON responses.
     """
 
     def __init__(
         self,
-        model: str = "gemini-2.0-flash",
+        model: str = "gemini-2.5-flash",
         api_key: str | None = None,
         max_candidates_per_request: int = 30,
         min_score: float = 0.3,

@@ -19,7 +19,7 @@ class HybridLibrarian(Librarian):
     def __init__(
         self,
         rules: list[LibrarianRule] | None = None,
-        gemini_model: str = "gemini-2.0-flash",
+        gemini_model: str = "gemini-2.5-flash",
         api_key: str | None = None,
         prefilter_limit: int = 50,
         min_prefilter_score: float = 0.2,
@@ -93,7 +93,7 @@ class HybridLibrarian(Librarian):
 def create_librarian(
     mode: str = "hybrid",
     rules: list[LibrarianRule] | None = None,
-    gemini_model: str = "gemini-2.0-flash",
+    gemini_model: str = "gemini-2.5-flash",
     api_key: str | None = None,
 ) -> Librarian:
     """Factory function to create a Librarian based on mode.

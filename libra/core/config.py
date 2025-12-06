@@ -23,14 +23,14 @@ class LLMConfig(BaseModel):
     """Configuration for LLM-based Librarian."""
 
     provider: str = "gemini"
-    model: str = "gemini-2.0-flash"
+    model: str = "gemini-2.5-flash"
 
 
 class EmbeddingConfig(BaseModel):
     """Configuration for embedding provider."""
 
     provider: str = "gemini"
-    model: str = "text-embedding-004"
+    model: str = "gemini-embedding-001"
     dimensions: int = 768
 
 
