@@ -24,7 +24,7 @@ Building libra - an intelligent context orchestration platform for AI agents usi
 12. ✅ CLI with Typer
 13. ✅ MCP Server (stdio mode)
 14. ✅ REST API with FastAPI
-15. ⬜ Basic Web UI (optional for MVP)
+15. ⬜ Basic Web UI
 
 ## Phase 5: Integration & Polish
 16. ✅ Configuration system

@@ -105,7 +105,13 @@ class GeminiEmbeddingProvider(EmbeddingProvider):
                 task_type=task_type,
                 output_dimensionality=self._dimensions,
             )
-            return result["embedding"]
+            # When batching, result["embedding"] is already a list of embeddings
+            embeddings = result["embedding"]
+            # Ensure we return list[list[float]] - handle edge case of single text
+            if embeddings and not isinstance(embeddings[0], list):
+                # Single text was passed, returned single embedding
+                return [embeddings]
+            return embeddings  # type: ignore[return-value]
         except Exception as e:
             raise EmbeddingError(f"Failed to generate batch embeddings: {e}", e)
 
