@@ -12,7 +12,7 @@ Building libra - an intelligent context orchestration platform for AI agents usi
 ## Phase 2: Intelligence Layer
 5. ✅ Rules-based Librarian
 6. ✅ Budget manager for token optimization
-7. ✅ Gemini LLM-based Librarian (gemini-2.0-flash)
+7. ✅ Gemini LLM-based Librarian (gemini-2.5-flash)
 8. ✅ Hybrid mode implementation
 
 ## Phase 3: Ingestion Layer
@@ -30,17 +30,18 @@ Building libra - an intelligent context orchestration platform for AI agents usi
 16. ✅ Configuration system
 17. ✅ Audit logging
 18. ✅ Error handling and logging
-19. ⬜ Tests
+19. ✅ Tests (53 tests passing)
 20. ⬜ Documentation
 
 ## Current Status
-- Phase: Implementation complete, quality improvements in progress
-- Next Step: Add tests and improve code quality
+- Phase: Implementation complete
+- All 53 tests passing
+- Updated to latest Gemini models (gemini-2.5-flash, gemini-embedding-001)
 
 ## Technology Stack
 - Python 3.11+
 - SQLite + sqlite-vec
-- Gemini (gemini-2.5-flash for LLM, text-embedding-004 for embeddings)
+- Gemini (gemini-2.5-flash for LLM, gemini-embedding-001 for embeddings)
 - FastAPI for REST API
 - Typer for CLI
 - MCP SDK for agent integration
