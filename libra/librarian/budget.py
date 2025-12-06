@@ -81,19 +81,19 @@ class BudgetManager:
         Returns:
             Tuple of (selected contexts, tokens used)
         """
-        # Group contexts by type
+        # Group contexts by type (use string keys for type_allocation compatibility)
         by_type: dict[str, list[ScoredContext]] = {}
         for sc in contexts:
-            ctx_type = sc.context.type
-            if ctx_type not in by_type:
-                by_type[ctx_type] = []
-            by_type[ctx_type].append(sc)
+            ctx_type_str = sc.context.type if isinstance(sc.context.type, str) else sc.context.type.value
+            if ctx_type_str not in by_type:
+                by_type[ctx_type_str] = []
+            by_type[ctx_type_str].append(sc)
 
         # Calculate budget per type
-        type_budgets = {}
+        type_budgets: dict[str, int] = {}
         allocated_total = 0.0
-        for ctx_type, allocation in self.type_allocation.items():
-            type_budgets[ctx_type] = int(budget * allocation)
+        for ctx_type_key, allocation in self.type_allocation.items():
+            type_budgets[ctx_type_key] = int(budget * allocation)
             allocated_total += allocation
 
         # Distribute remaining budget
@@ -102,15 +102,15 @@ class BudgetManager:
             if unallocated_types:
                 remaining = 1.0 - allocated_total
                 per_type = remaining / len(unallocated_types)
-                for ctx_type in unallocated_types:
-                    type_budgets[ctx_type] = int(budget * per_type)
+                for ctx_type_key in unallocated_types:
+                    type_budgets[ctx_type_key] = int(budget * per_type)
 
         # Select from each type
         selected = []
         total_tokens = 0
 
-        for ctx_type, type_contexts in by_type.items():
-            type_budget = type_budgets.get(ctx_type, 0)
+        for ctx_type_str, type_contexts in by_type.items():
+            type_budget = type_budgets.get(ctx_type_str, 0)
             if type_budget <= 0:
                 continue
 
