@@ -1,204 +1,92 @@
-# Agent Hive Implementation Plan
+# libra Implementation Plan
 
-## Project Status: ✅ COMPLETE - Gemini-Only Hive Ready
+## Overview
+Building libra - an intelligent context orchestration platform for AI agents using Gemini models.
 
-The Agent Hive is now a fully functional self-replicating, self-learning agent collective built on Google ADK and ACE Framework.
+## Phase 1: Foundation (Core Data Layer)
+1. ✅ Project structure and package setup
+2. ✅ Core data models (Context, AuditEntry, Configuration)
+3. ✅ SQLite storage layer with sqlite-vec for vector search
+4. ✅ Gemini embedding integration
 
-### Recent Updates (2025-12-06)
-- Fixed ADK imports to use correct `google-adk` API (`llm_agent.LlmAgent`, `runners.InMemoryRunner`)
-- Updated drone execute method to use proper async runner pattern with `types.Content`
-- Changed ALL models to Gemini-only:
-  - Primary model: `gemini-2.5-flash`
-  - Fast model: `gemini-2.5-flash`
-  - ACE model: `gemini/gemini-2.0-flash`
-- Fixed monetization module exports (added PricingEngine, ProductType, ProductStatus)
-- All imports verified working
-- All 25 tests passing
+## Phase 2: Intelligence Layer
+5. ✅ Rules-based Librarian
+6. ✅ Budget manager for token optimization
+7. ✅ Gemini LLM-based Librarian (gemini-2.0-flash)
+8. ✅ Hybrid mode implementation
 
-## Completed Components
+## Phase 3: Ingestion Layer
+9. ✅ Text and Markdown ingestors
+10. ✅ Directory ingestor with .gitignore support
+11. ✅ Chunking strategy implementation
 
-### 1. ✅ Main Hive Orchestrator (`hive.py`)
-- `AgentHive` class coordinates all components
-- Queen agent for strategic planning
-- Drone management with callbacks
-- ACE learning integration
-- Monetization tracking
-- State persistence (save/load)
+## Phase 4: Interface Layer
+12. ✅ CLI with Typer
+13. ✅ MCP Server (stdio mode)
+14. ✅ REST API with FastAPI
+15. ⬜ Basic Web UI (optional for MVP)
 
-### 2. ✅ Queen Module (`queen/`)
-- `QueenAgent`: Strategic orchestration
-- `StrategicPlanner`: Goal and task management
-- `ReplicationManager`: Dynamic drone spawning
+## Phase 5: Integration & Polish
+16. ⬜ Configuration system
+17. ⬜ Audit logging
+18. ⬜ Error handling and logging
+19. ⬜ Tests
+20. ⬜ Documentation
 
-### 3. ✅ Drone Types (`drones/`)
-- `WorkerDrone`: General-purpose task execution
-- `BuilderDrone`: Product/code creation
-- `ResearcherDrone`: Market intelligence with real web tools
-- `SellerDrone`: Marketing and sales with contact extraction
+## Current Status
+- Phase: Starting implementation
+- Next Step: Create project structure
 
-### 4. ✅ ACE Learning Integration (`learning/`)
-- `ACEWrapper`: Full ACE loop with Reflector + SkillManager
-- `HiveSkillbook`: Thread-safe, persistent skill storage
-- `HiveEnvironment`: Task evaluation
-- Fallback to simplified learning when ACE unavailable
+## Technology Stack
+- Python 3.11+
+- SQLite + sqlite-vec
+- Gemini (gemini-2.0-flash for LLM, text-embedding-004 for embeddings)
+- FastAPI for REST API
+- Typer for CLI
+- MCP SDK for agent integration
 
-### 5. ✅ Monetization Module (`monetization/`)
-- `Treasury`: Financial tracking (SQLite-based)
-- `ProductRegistry`: Product/service catalog
-- `PricingEngine`: Multiple pricing strategies
-  - Cost-plus pricing
-  - Value-based pricing
-  - Competitive pricing
-
-### 6. ✅ Web Tools (`tools/web_tools.py`)
-- `fetch_url`: Real web fetching with httpx + BeautifulSoup
-- `analyze_website`: SEO, technology, business analysis
-- `extract_contact_info`: Email/phone extraction
-- `compare_websites`: Multi-site comparison
-- `monitor_trends`: Placeholder for trend API integration
-
-### 7. ✅ Runner Script (`run_hive.py`)
-- Demo initialization and configuration
-- Task creation and execution
-- Monetization setup with sample products
-- Status and metrics reporting
-
-### 8. ✅ Tests (`tests/`)
-- `test_web_tools.py`: Web tool unit tests
-- `test_hive.py`: Core component tests
-
-## Architecture
-
+## File Structure (Target)
 ```
-┌───────────────────────────────────────────────────────────────┐
-│                        AGENT HIVE                              │
-├───────────────────────────────────────────────────────────────┤
-│                                                                │
-│  ┌──────────────────────────────────────────────────────────┐ │
-│  │                    QUEEN AGENT                           │ │
-│  │  ┌──────────────┐  ┌─────────────┐  ┌────────────────┐  │ │
-│  │  │   Planner    │  │ Replicator  │  │    Decision    │  │ │
-│  │  │  (Goals &    │  │  (Drone     │  │     Agent      │  │ │
-│  │  │   Tasks)     │  │  Spawning)  │  │  (ADK-based)   │  │ │
-│  │  └──────────────┘  └─────────────┘  └────────────────┘  │ │
-│  └──────────────────────────────────────────────────────────┘ │
-│                              │                                 │
-│                              ▼                                 │
-│  ┌──────────────────────────────────────────────────────────┐ │
-│  │                      DRONES                              │ │
-│  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐   │ │
-│  │  │ Worker   │ │ Builder  │ │Researcher│ │  Seller  │   │ │
-│  │  │ (General │ │ (Code/   │ │ (Market  │ │ (Sales/  │   │ │
-│  │  │  Tasks)  │ │ Products)│ │  Intel)  │ │Marketing)│   │ │
-│  │  └──────────┘ └──────────┘ └──────────┘ └──────────┘   │ │
-│  └──────────────────────────────────────────────────────────┘ │
-│                              │                                 │
-│                              ▼                                 │
-│  ┌──────────────────────────────────────────────────────────┐ │
-│  │                    ACE LEARNING                          │ │
-│  │  Task Result → Reflector → SkillManager → Skillbook      │ │
-│  │                    (Shared across all drones)            │ │
-│  └──────────────────────────────────────────────────────────┘ │
-│                              │                                 │
-│                              ▼                                 │
-│  ┌──────────────────────────────────────────────────────────┐ │
-│  │                   MONETIZATION                           │ │
-│  │  ┌──────────┐  ┌───────────────┐  ┌────────────────┐    │ │
-│  │  │ Treasury │  │ Product       │  │ Pricing        │    │ │
-│  │  │ (Finances)│ │ Registry      │  │ Engine         │    │ │
-│  │  └──────────┘  └───────────────┘  └────────────────┘    │ │
-│  └──────────────────────────────────────────────────────────┘ │
-└───────────────────────────────────────────────────────────────┘
+libra/
+├── __init__.py
+├── core/
+│   ├── __init__.py
+│   ├── models.py          # Pydantic models
+│   ├── config.py          # Configuration management
+│   └── exceptions.py      # Custom exceptions
+├── storage/
+│   ├── __init__.py
+│   ├── database.py        # SQLite + sqlite-vec
+│   └── migrations.py      # Schema management
+├── embedding/
+│   ├── __init__.py
+│   ├── base.py            # Abstract embedding provider
+│   └── gemini.py          # Gemini embeddings
+├── librarian/
+│   ├── __init__.py
+│   ├── base.py            # Abstract Librarian
+│   ├── rules.py           # Rules-based selection
+│   ├── llm.py             # Gemini-based selection
+│   ├── hybrid.py          # Hybrid mode
+│   └── budget.py          # Token budget management
+├── ingestion/
+│   ├── __init__.py
+│   ├── base.py            # Abstract ingestor
+│   ├── text.py            # Text file ingestor
+│   ├── markdown.py        # Markdown ingestor
+│   ├── directory.py       # Directory ingestor
+│   └── chunker.py         # Intelligent chunking
+├── interfaces/
+│   ├── __init__.py
+│   ├── cli.py             # Typer CLI
+│   ├── mcp_server.py      # MCP server
+│   └── api.py             # FastAPI REST API
+└── utils/
+    ├── __init__.py
+    └── tokens.py          # Token counting utilities
 ```
 
-## Key Features
-
-1. **Self-Replicating**: Automatically spawns new drones based on task queue depth
-2. **Self-Learning**: Uses ACE framework to learn from every task execution
-3. **Monetization-First**: Built-in financial tracking and pricing optimization
-4. **Real Web Capabilities**: Actual HTTP fetching and content analysis
-5. **Persistence**: Skillbook and state saved to disk
-
-## Usage
-
-```python
-from agent_hive import AgentHive, HiveConfig
-from agent_hive.config.settings import LLMConfig
-
-# Configure the hive
-config = HiveConfig(
-    hive_name="ProductionHive",
-    llm=LLMConfig(
-        primary_model="gemini-2.5-flash",
-        ace_model="gemini/gemini-2.0-flash",
-    ),
-)
-
-# Create and initialize
-hive = AgentHive(config)
-hive.initialize()
-
-# Add tasks
-hive.add_task(
-    title="Research AI market",
-    description="Find profitable niches in AI automation",
-    drone_type="researcher",
-)
-
-# Run the hive
-import asyncio
-results = asyncio.run(hive.run(cycles=5))
-```
-
-## Future Enhancements
-
-1. **Trend API Integration**: Connect to Google Trends or similar
-2. **Payment Processing**: Stripe/PayPal integration for actual revenue
-3. **Multi-Hive Coordination**: Hives that spawn child hives
-4. **Advanced Learning**: Cross-hive skillbook sharing
-5. **Deployment**: Docker/Kubernetes deployment templates
-
-## Dependencies
-
-- google-adk >= 1.0.0 (installed via `uv pip install google-adk`)
-- google-genai (for types.Content message handling)
-- pydantic >= 2.0.0
-- litellm >= 1.0.0
-- httpx >= 0.25.0
-- beautifulsoup4 >= 4.12.0
-- ace-framework (optional, for full learning)
-
-## ADK API Reference
-
-### Correct Imports
-```python
-from google.adk.agents import llm_agent
-from google.adk import runners
-from google.genai import types
-
-Agent = llm_agent.LlmAgent
-InMemoryRunner = runners.InMemoryRunner
-```
-
-### Running Agent
-```python
-runner = InMemoryRunner(agent=agent, app_name="my_app")
-session = await runner.session_service.create_session(
-    app_name=app_name,
-    user_id=user_id,
-)
-
-message = types.Content(
-    role="user",
-    parts=[types.Part.from_text(text=prompt)]
-)
-
-async for event in runner.run_async(
-    user_id=user_id,
-    session_id=session.id,
-    new_message=message,
-):
-    if event.is_final_response() and event.content and event.content.parts:
-        response = event.content.parts[0].text
-        break
-```
+## Notes
+- Use Gemini models exclusively for all LLM operations
+- Local-first: all data stored in ~/.libra/
+- Prioritize MVP features (P0 and P1)
