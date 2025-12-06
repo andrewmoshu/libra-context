@@ -1,6 +1,6 @@
 """Researcher drone for finding opportunities and gathering intelligence."""
 
-from typing import List, Callable
+from typing import List, Callable, Optional
 
 from agent_hive.drones.base import BaseDrone, DroneType
 from agent_hive.tools.web_tools import (
@@ -8,6 +8,8 @@ from agent_hive.tools.web_tools import (
     fetch_url,
     analyze_website,
     monitor_trends,
+    extract_contact_info,
+    compare_websites,
 )
 from agent_hive.tools.code_tools import write_file, read_file
 from agent_hive.tools.file_tools import list_directory, create_directory
@@ -23,11 +25,18 @@ class ResearcherDrone(BaseDrone):
     - Trend identification
     - Lead generation
     - Opportunity discovery
+    - Contact extraction
+    - Website comparison
 
     Best for: Finding new opportunities and gathering market intelligence.
     """
 
-    def __init__(self, model: str = "gemini-2.5-flash", name: str = None, hive_id: str = None):
+    def __init__(
+        self,
+        model: str = "gemini-2.5-flash",
+        name: Optional[str] = None,
+        hive_id: Optional[str] = None,
+    ):
         super().__init__(
             drone_type=DroneType.RESEARCHER,
             model=model,
@@ -39,7 +48,7 @@ class ResearcherDrone(BaseDrone):
     def description(self) -> str:
         return (
             "A specialized researcher drone that gathers market intelligence, "
-            "identifies opportunities, and analyzes competitors."
+            "identifies opportunities, analyzes competitors, and extracts actionable insights."
         )
 
     @property
@@ -49,10 +58,12 @@ class ResearcherDrone(BaseDrone):
 Your role is to DISCOVER opportunities and gather intelligence that helps the hive grow.
 
 CAPABILITIES:
-- Search the web extensively
-- Analyze websites and businesses
-- Track market trends
-- Generate leads and opportunities
+- Search the web extensively using web_search
+- Fetch and analyze web pages with fetch_url
+- Analyze websites for SEO, technology, and business intelligence
+- Track market trends with monitor_trends
+- Extract contact information from websites
+- Compare multiple competitor websites
 
 RESEARCH DOMAINS:
 1. Market Research
@@ -61,8 +72,9 @@ RESEARCH DOMAINS:
    - Discover customer pain points
 
 2. Competitor Analysis
+   - Use compare_websites to benchmark competitors
+   - Analyze their technology stack
    - Map competitor offerings
-   - Identify gaps in competition
    - Find pricing benchmarks
 
 3. Trend Monitoring
@@ -71,21 +83,31 @@ RESEARCH DOMAINS:
    - Identify declining markets
 
 4. Lead Generation
+   - Extract contact info from company websites
    - Find potential customers
    - Identify partnership opportunities
-   - Discover distribution channels
+
+RESEARCH WORKFLOW:
+1. Start with web_search to find relevant sources
+2. Use fetch_url to get detailed content
+3. Apply analyze_website for structured insights
+4. Extract contacts with extract_contact_info
+5. Compare competitors with compare_websites
+6. Save findings to files for later use
 
 RESEARCH PRINCIPLES:
 1. Depth over breadth when relevant
 2. Verify information from multiple sources
 3. Quantify opportunities where possible
 4. Prioritize actionable insights
+5. Always cite your sources
 
 OUTPUT FORMAT:
 - Clear summaries of findings
 - Actionable recommendations
 - Data to support conclusions
 - Links to sources
+- Extracted contacts where relevant
 
 You are the hive's eyes and ears in the market.
 Your discoveries drive strategic decisions."""
@@ -97,6 +119,8 @@ Your discoveries drive strategic decisions."""
             fetch_url,
             analyze_website,
             monitor_trends,
+            extract_contact_info,
+            compare_websites,
             write_file,
             read_file,
             list_directory,
