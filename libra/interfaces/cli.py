@@ -1,11 +1,11 @@
 """Command-line interface for libra using Typer."""
 
 import json
+import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
-from uuid import UUID
 
 import typer
 from rich.console import Console
@@ -505,6 +505,8 @@ def config_set(
 @config_app.command("edit")
 def config_edit():
     """Open configuration in editor."""
+    import os
+
     service = get_service()
     config_path = service.config.config_path
 
@@ -512,11 +514,21 @@ def config_edit():
     if not config_path.exists():
         service.config.save()
 
-    import os
     editor = os.environ.get("EDITOR", "vim")
 
     console.print(f"[blue]Opening {config_path} in {editor}...[/blue]")
-    os.system(f"{editor} {config_path}")
+
+    # Use subprocess.run with list args to prevent shell injection
+    try:
+        result = subprocess.run([editor, str(config_path)], check=False)
+        if result.returncode != 0:
+            console.print(f"[yellow]Editor exited with code {result.returncode}[/yellow]")
+    except FileNotFoundError:
+        console.print(f"[red]Editor not found: {editor}. Set EDITOR environment variable.[/red]")
+        raise typer.Exit(1)
+    except Exception as e:
+        console.print(f"[red]Failed to open editor: {e}[/red]")
+        raise typer.Exit(1)
 
 
 # Utility Commands
