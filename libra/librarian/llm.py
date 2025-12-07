@@ -123,7 +123,8 @@ class GeminiLibrarian(Librarian):
                 contents=prompt,
                 config=self._generation_config,
             )
-            selections = self._parse_response(response.text, filtered)
+            response_text = response.text or ""
+            selections = self._parse_response(response_text, filtered)
 
             # Filter by minimum score and sort
             scored = [s for s in selections if s.relevance_score >= self.min_score]

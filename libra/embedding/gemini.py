@@ -81,7 +81,14 @@ class GeminiEmbeddingProvider(EmbeddingProvider):
                     output_dimensionality=self._dimensions,
                 ),
             )
-            return list(result.embeddings[0].values)
+            if result.embeddings is None or len(result.embeddings) == 0:
+                raise EmbeddingError("No embeddings returned from API")
+            values = result.embeddings[0].values
+            if values is None:
+                raise EmbeddingError("Embedding values are None")
+            return list(values)
+        except EmbeddingError:
+            raise
         except Exception as e:
             raise EmbeddingError(f"Failed to generate embedding: {e}", e)
 
@@ -103,15 +110,26 @@ class GeminiEmbeddingProvider(EmbeddingProvider):
             return []
 
         try:
-            result = self._client.models.embed_content(
-                model=self.model,
-                contents=texts,
-                config=types.EmbedContentConfig(
-                    task_type=task_type,
-                    output_dimensionality=self._dimensions,
-                ),
-            )
-            return [list(emb.values) for emb in result.embeddings]
+            # Process each text individually to work around SDK type constraints
+            embeddings: list[list[float]] = []
+            for text in texts:
+                result = self._client.models.embed_content(
+                    model=self.model,
+                    contents=text,
+                    config=types.EmbedContentConfig(
+                        task_type=task_type,
+                        output_dimensionality=self._dimensions,
+                    ),
+                )
+                if result.embeddings is None or len(result.embeddings) == 0:
+                    raise EmbeddingError("No embeddings returned from API")
+                values = result.embeddings[0].values
+                if values is None:
+                    raise EmbeddingError("Embedding values are None")
+                embeddings.append(list(values))
+            return embeddings
+        except EmbeddingError:
+            raise
         except Exception as e:
             raise EmbeddingError(f"Failed to generate batch embeddings: {e}", e)
 
