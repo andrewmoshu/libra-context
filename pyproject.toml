@@ -34,7 +34,8 @@ dependencies = [
 
     # Google GenAI SDK (primary LLM and embedding provider)
     # Using the new unified SDK (google-genai) instead of deprecated google-generativeai
-    "google-genai>=1.0.0",
+    # Note: google-generativeai is deprecated (loses support Nov 30, 2025)
+    "google-genai>=1.53.0",
 
     # SQLite with vector search
     "sqlite-vec>=0.1.0",
