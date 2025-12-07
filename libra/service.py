@@ -327,9 +327,11 @@ class LibraService:
         )
 
         # Step 4: Record access
-        context_ids: list[UUID | str] = [sc.context.id for sc in selected]
-        if context_ids:
-            self.store.record_access(context_ids)
+        context_uuids: list[UUID] = [sc.context.id for sc in selected]
+        if context_uuids:
+            # Convert to list that accepts UUID | str for record_access
+            ids_for_access: list[UUID | str] = list(context_uuids)
+            self.store.record_access(ids_for_access)
 
         # Step 5: Create response
         response = ContextResponse(
@@ -343,7 +345,7 @@ class LibraService:
         audit_entry = AuditEntry(
             agent_id=agent_id,
             task=task,
-            contexts_served=context_ids,
+            contexts_served=context_uuids,
             relevance_scores=[sc.relevance_score for sc in selected],
             tokens_used=tokens_used,
             tokens_budget=max_tokens,

@@ -106,11 +106,11 @@ class BudgetManager:
                     type_budgets[ctx_type_key] = int(budget * per_type)
 
         # Select from each type
-        selected = []
+        selected: list[ScoredContext] = []
         total_tokens = 0
 
-        for ctx_type_str, type_contexts in by_type.items():
-            type_budget = type_budgets.get(ctx_type_str, 0)
+        for type_key, type_contexts in by_type.items():
+            type_budget = type_budgets.get(type_key, 0)
             if type_budget <= 0:
                 continue
 

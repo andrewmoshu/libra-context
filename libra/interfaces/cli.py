@@ -335,7 +335,7 @@ def ingest(
         console.print("[yellow]Watch mode not yet implemented.[/yellow]")
         raise typer.Exit(1)
 
-    def progress_callback(file_path: str, current: int, total: int):
+    def progress_callback(file_path: str, current: int, total: int) -> None:
         console.print(f"[dim]Processing {current}/{total}: {file_path}[/dim]")
 
     with Progress(

@@ -72,7 +72,8 @@ def truncate_to_tokens(text: str, max_tokens: int) -> str:
         tokens = _ENCODING.encode(text)
         if len(tokens) <= max_tokens:
             return text
-        return _ENCODING.decode(tokens[:max_tokens])
+        decoded: str = _ENCODING.decode(tokens[:max_tokens])
+        return decoded
 
     # Fallback: truncate by estimated ratio
     current_tokens = estimate_tokens(text)
