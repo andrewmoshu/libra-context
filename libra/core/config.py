@@ -2,6 +2,7 @@
 
 import os
 from collections.abc import Callable
+from enum import Enum
 from pathlib import Path
 from typing import Any
 
@@ -9,6 +10,34 @@ import yaml
 from pydantic import BaseModel, Field
 
 from libra.core.models import LibrarianMode
+
+
+class EmbeddingProviderType(str, Enum):
+    """Supported embedding providers."""
+
+    GEMINI = "gemini"
+    OPENAI = "openai"
+    OLLAMA = "ollama"
+    LOCAL = "local"  # sentence-transformers
+    AZURE_OPENAI = "azure_openai"
+    AWS_BEDROCK = "aws_bedrock"
+    HUGGINGFACE = "huggingface"
+    TOGETHER = "together"
+    CUSTOM = "custom"  # Custom HTTP endpoint
+
+
+class LLMProviderType(str, Enum):
+    """Supported LLM providers."""
+
+    GEMINI = "gemini"
+    OPENAI = "openai"
+    ANTHROPIC = "anthropic"
+    OLLAMA = "ollama"
+    AZURE_OPENAI = "azure_openai"
+    AWS_BEDROCK = "aws_bedrock"
+    HUGGINGFACE = "huggingface"
+    TOGETHER = "together"
+    CUSTOM = "custom"  # Custom HTTP endpoint
 
 
 class LibrarianRule(BaseModel):
@@ -25,6 +54,20 @@ class LLMConfig(BaseModel):
 
     provider: str = "gemini"
     model: str = "gemini-2.5-flash"
+    # API key (can be set via environment variable)
+    api_key: str | None = None
+    # For Azure OpenAI
+    azure_endpoint: str | None = None
+    azure_deployment: str | None = None
+    api_version: str | None = None
+    # For AWS Bedrock
+    aws_region: str | None = None
+    aws_profile: str | None = None
+    # For Ollama and custom endpoints
+    base_url: str | None = None
+    # Temperature and other generation settings
+    temperature: float = 0.1
+    max_tokens: int | None = None
 
 
 class EmbeddingConfig(BaseModel):
@@ -33,6 +76,19 @@ class EmbeddingConfig(BaseModel):
     provider: str = "gemini"
     model: str = "gemini-embedding-001"
     dimensions: int = 768
+    # API key (can be set via environment variable)
+    api_key: str | None = None
+    # For Azure OpenAI
+    azure_endpoint: str | None = None
+    azure_deployment: str | None = None
+    api_version: str | None = None
+    # For AWS Bedrock
+    aws_region: str | None = None
+    aws_profile: str | None = None
+    # For Ollama and custom endpoints
+    base_url: str | None = None
+    # Batch size for embedding operations
+    batch_size: int = 100
 
 
 class ServerConfig(BaseModel):
