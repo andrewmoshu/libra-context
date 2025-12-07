@@ -829,22 +829,392 @@ Please answer using the context above when relevant."""
 
 
 @app.command("init")
-def init() -> None:
-    """Initialize libra (create config directory and default config)."""
+def init(
+    non_interactive: bool = typer.Option(
+        False, "--non-interactive", "-y", help="Skip interactive prompts and use defaults"
+    ),
+) -> None:
+    """Initialize libra with interactive provider configuration.
+
+    This command guides you through setting up libra, including:
+    - Selecting LLM provider (Gemini, OpenAI, Anthropic, Ollama, etc.)
+    - Selecting embedding provider
+    - Configuring API keys
+    - Setting up provider-specific options
+    """
+    from libra.embedding.factory import get_supported_embedding_providers
+    from libra.llm_providers.factory import get_supported_llm_providers
+
+    # Check if already initialized
+    config_path = Path.home() / ".libra" / "config.yaml"
+    if config_path.exists() and not non_interactive:
+        console.print(Panel(
+            f"[yellow]libra is already initialized![/yellow]\n\n"
+            f"Config file: {config_path}\n\n"
+            f"Options:\n"
+            f"• Run [bold]libra config edit[/bold] to modify configuration\n"
+            f"• Run [bold]libra init -y[/bold] to reinitialize with defaults\n"
+            f"• Delete {config_path} and run [bold]libra init[/bold] again",
+            title="Already Initialized",
+        ))
+        if not typer.confirm("Do you want to reconfigure libra?"):
+            raise typer.Exit(0)
+
+    console.print(Panel(
+        "[bold blue]Welcome to libra![/bold blue]\n\n"
+        "libra is an intelligent context orchestration platform for AI agents.\n\n"
+        "This wizard will help you configure:\n"
+        "• LLM provider for intelligent context selection\n"
+        "• Embedding provider for semantic search\n"
+        "• API keys and other settings",
+        title="🔮 libra Setup Wizard",
+    ))
+
+    if non_interactive:
+        # Use defaults without prompting
+        config = LibraConfig()
+        config.ensure_data_dir()
+        config.save()
+        console.print(Panel(
+            f"[green]libra initialized with defaults![/green]\n\n"
+            f"Data directory: {config.data_dir}\n"
+            f"Config file: {config.config_path}\n"
+            f"LLM: {config.librarian.llm.provider} ({config.librarian.llm.model})\n"
+            f"Embeddings: {config.embedding.provider} ({config.embedding.model})\n\n"
+            f"[yellow]Note: Set API keys via environment variables:[/yellow]\n"
+            f"  export GOOGLE_AI_API_KEY=your-key",
+            title="✓ Initialized",
+        ))
+        return
+
+    # Step 1: Select LLM provider
+    console.print("\n[bold]Step 1: Select LLM Provider[/bold]")
+    console.print("The LLM provider powers intelligent context selection (Librarian).\n")
+
+    llm_providers = get_supported_llm_providers()
+    _display_provider_table(llm_providers, "LLM Providers")
+
+    llm_choice = _prompt_provider_selection(
+        llm_providers, "LLM", default="gemini"
+    )
+    selected_llm = next(p for p in llm_providers if p["name"] == llm_choice)
+
+    # Step 2: Select embedding provider
+    console.print("\n[bold]Step 2: Select Embedding Provider[/bold]")
+    console.print("The embedding provider enables semantic search over your contexts.\n")
+
+    embedding_providers = get_supported_embedding_providers()
+    _display_provider_table(embedding_providers, "Embedding Providers")
+
+    embedding_choice = _prompt_provider_selection(
+        embedding_providers, "Embedding", default="gemini"
+    )
+    selected_embedding = next(p for p in embedding_providers if p["name"] == embedding_choice)
+
+    # Step 3: Configure API keys and provider-specific settings
+    console.print("\n[bold]Step 3: Configure Provider Settings[/bold]\n")
+
+    # Build configuration
+    from libra.core.config import EmbeddingConfig, LLMConfig
+
+    llm_config = _configure_llm_provider(selected_llm)
+    embedding_config = _configure_embedding_provider(selected_embedding)
+
+    # Step 4: Additional settings
+    console.print("\n[bold]Step 4: Additional Settings[/bold]\n")
+
+    librarian_mode = typer.prompt(
+        "Librarian mode (rules/llm/hybrid)",
+        default="hybrid",
+        show_default=True,
+    )
+    while librarian_mode not in ["rules", "llm", "hybrid"]:
+        console.print("[red]Invalid mode. Choose: rules, llm, or hybrid[/red]")
+        librarian_mode = typer.prompt(
+            "Librarian mode",
+            default="hybrid",
+        )
+
+    token_budget = typer.prompt(
+        "Default token budget",
+        default="2000",
+        show_default=True,
+    )
+    try:
+        token_budget = int(token_budget)
+    except ValueError:
+        token_budget = 2000
+
+    # Build final configuration
     config = LibraConfig()
+    config.librarian.mode = LibrarianMode(librarian_mode)
+    config.librarian.llm = llm_config
+    config.embedding = embedding_config
+    config.defaults.token_budget = token_budget
+
+    # Add default rules
+    config.librarian.rules = LibraConfig.default_rules()
+
+    # Save configuration
     config.ensure_data_dir()
     config.save()
 
+    # Step 5: Summary
     console.print(Panel(
-        f"[green]libra initialized![/green]\n\n"
-        f"Data directory: {config.data_dir}\n"
-        f"Config file: {config.config_path}\n\n"
-        f"Next steps:\n"
-        f"1. Set your API key: export GOOGLE_AI_API_KEY=your-key\n"
-        f"2. Add some context: libra add 'Your context here'\n"
-        f"3. Query for context: libra query 'Your task'",
-        title="✓ Initialized",
+        f"[green]libra initialized successfully![/green]\n\n"
+        f"[bold]Configuration:[/bold]\n"
+        f"  Data directory: {config.data_dir}\n"
+        f"  Config file: {config.config_path}\n\n"
+        f"[bold]LLM Provider:[/bold]\n"
+        f"  Provider: {config.librarian.llm.provider}\n"
+        f"  Model: {config.librarian.llm.model}\n\n"
+        f"[bold]Embedding Provider:[/bold]\n"
+        f"  Provider: {config.embedding.provider}\n"
+        f"  Model: {config.embedding.model}\n"
+        f"  Dimensions: {config.embedding.dimensions}\n\n"
+        f"[bold]Librarian:[/bold]\n"
+        f"  Mode: {config.librarian.mode}\n"
+        f"  Token Budget: {config.defaults.token_budget}\n\n"
+        f"[bold]Next steps:[/bold]\n"
+        f"1. Add some context: [cyan]libra add 'Your context here'[/cyan]\n"
+        f"2. Query for context: [cyan]libra query 'Your task'[/cyan]\n"
+        f"3. Start chat: [cyan]libra chat[/cyan]",
+        title="✓ Setup Complete",
     ))
+
+
+def _display_provider_table(providers: list[dict], title: str) -> None:
+    """Display a table of providers."""
+    table = Table(title=title)
+    table.add_column("#", style="dim", width=3)
+    table.add_column("Name", width=15)
+    table.add_column("Description", width=50)
+    table.add_column("Default Model", width=25)
+
+    for i, p in enumerate(providers, 1):
+        requires = f" [dim]({p.get('requires', '')})[/dim]" if p.get("requires") else ""
+        table.add_row(
+            str(i),
+            p["display_name"],
+            p["description"] + requires,
+            p["default_model"],
+        )
+
+    console.print(table)
+    console.print()
+
+
+def _prompt_provider_selection(
+    providers: list[dict], provider_type: str, default: str
+) -> str:
+    """Prompt user to select a provider."""
+    provider_names = [p["name"] for p in providers]
+    provider_map = {str(i): p["name"] for i, p in enumerate(providers, 1)}
+
+    while True:
+        choice = typer.prompt(
+            f"Select {provider_type} provider (name or number)",
+            default=default,
+            show_default=True,
+        )
+
+        # Check if it's a number
+        if choice in provider_map:
+            return provider_map[choice]
+
+        # Check if it's a name
+        if choice.lower() in provider_names:
+            return choice.lower()
+
+        console.print(f"[red]Invalid choice. Enter a number (1-{len(providers)}) or provider name.[/red]")
+
+
+def _configure_llm_provider(provider: dict) -> "LLMConfig":
+    """Configure LLM provider settings."""
+    import os
+
+    from libra.core.config import LLMConfig
+
+    config = LLMConfig()
+    config.provider = provider["name"]
+    config.model = provider["default_model"]
+
+    console.print(f"[bold]Configuring {provider['display_name']}[/bold]\n")
+
+    # Model selection
+    model = typer.prompt(
+        "Model name",
+        default=provider["default_model"],
+        show_default=True,
+    )
+    config.model = model
+
+    # API key (if required)
+    if provider.get("env_vars"):
+        # Check if already set in environment
+        existing_key = None
+        for env_var in provider["env_vars"]:
+            existing_key = os.environ.get(env_var)
+            if existing_key:
+                console.print(f"[green]✓ Found {env_var} in environment[/green]")
+                break
+
+        if not existing_key:
+            console.print(f"[yellow]API key not found in environment ({', '.join(provider['env_vars'])})[/yellow]")
+            if typer.confirm("Would you like to enter an API key now?", default=True):
+                api_key = typer.prompt(
+                    "API key",
+                    hide_input=True,
+                )
+                if api_key:
+                    config.api_key = api_key
+                    console.print("[dim]Note: API key will be saved to config file. For better security, use environment variables.[/dim]")
+            else:
+                console.print(f"[dim]Set later via: export {provider['env_vars'][0]}=your-key[/dim]")
+
+    # Provider-specific settings
+    if provider["name"] == "ollama":
+        base_url = typer.prompt(
+            "Ollama base URL",
+            default="http://localhost:11434",
+            show_default=True,
+        )
+        config.base_url = base_url
+
+    elif provider["name"] == "azure_openai":
+        endpoint = typer.prompt("Azure endpoint URL")
+        config.azure_endpoint = endpoint
+
+        deployment = typer.prompt("Deployment name")
+        config.azure_deployment = deployment
+
+        api_version = typer.prompt(
+            "API version",
+            default="2024-02-01",
+            show_default=True,
+        )
+        config.api_version = api_version
+
+    elif provider["name"] == "aws_bedrock":
+        region = typer.prompt(
+            "AWS region",
+            default="us-east-1",
+            show_default=True,
+        )
+        config.aws_region = region
+
+        profile = typer.prompt(
+            "AWS profile (leave empty for default)",
+            default="",
+        )
+        if profile:
+            config.aws_profile = profile
+
+    elif provider["name"] == "custom":
+        base_url = typer.prompt("Custom endpoint URL")
+        config.base_url = base_url
+
+    return config
+
+
+def _configure_embedding_provider(provider: dict) -> "EmbeddingConfig":
+    """Configure embedding provider settings."""
+    import os
+
+    from libra.core.config import EmbeddingConfig
+
+    config = EmbeddingConfig()
+    config.provider = provider["name"]
+    config.model = provider["default_model"]
+    config.dimensions = provider.get("default_dimensions", 768)
+
+    console.print(f"[bold]Configuring {provider['display_name']} Embeddings[/bold]\n")
+
+    # Model selection
+    model = typer.prompt(
+        "Model name",
+        default=provider["default_model"],
+        show_default=True,
+    )
+    config.model = model
+
+    # Dimensions
+    dimensions = typer.prompt(
+        "Embedding dimensions",
+        default=str(provider.get("default_dimensions", 768)),
+        show_default=True,
+    )
+    try:
+        config.dimensions = int(dimensions)
+    except ValueError:
+        config.dimensions = provider.get("default_dimensions", 768)
+
+    # API key (if required)
+    if provider.get("env_vars"):
+        # Check if already set in environment
+        existing_key = None
+        for env_var in provider["env_vars"]:
+            existing_key = os.environ.get(env_var)
+            if existing_key:
+                console.print(f"[green]✓ Found {env_var} in environment[/green]")
+                break
+
+        if not existing_key:
+            console.print(f"[yellow]API key not found in environment ({', '.join(provider['env_vars'])})[/yellow]")
+            if typer.confirm("Would you like to enter an API key now?", default=True):
+                api_key = typer.prompt(
+                    "API key",
+                    hide_input=True,
+                )
+                if api_key:
+                    config.api_key = api_key
+                    console.print("[dim]Note: API key will be saved to config file. For better security, use environment variables.[/dim]")
+            else:
+                console.print(f"[dim]Set later via: export {provider['env_vars'][0]}=your-key[/dim]")
+
+    # Provider-specific settings
+    if provider["name"] == "ollama":
+        base_url = typer.prompt(
+            "Ollama base URL",
+            default="http://localhost:11434",
+            show_default=True,
+        )
+        config.base_url = base_url
+
+    elif provider["name"] == "azure_openai":
+        endpoint = typer.prompt("Azure endpoint URL")
+        config.azure_endpoint = endpoint
+
+        deployment = typer.prompt("Deployment name")
+        config.azure_deployment = deployment
+
+        api_version = typer.prompt(
+            "API version",
+            default="2024-02-01",
+            show_default=True,
+        )
+        config.api_version = api_version
+
+    elif provider["name"] == "aws_bedrock":
+        region = typer.prompt(
+            "AWS region",
+            default="us-east-1",
+            show_default=True,
+        )
+        config.aws_region = region
+
+        profile = typer.prompt(
+            "AWS profile (leave empty for default)",
+            default="",
+        )
+        if profile:
+            config.aws_profile = profile
+
+    elif provider["name"] == "custom":
+        base_url = typer.prompt("Custom endpoint URL")
+        config.base_url = base_url
+
+    return config
 
 
 def create_cli_app() -> typer.Typer:
