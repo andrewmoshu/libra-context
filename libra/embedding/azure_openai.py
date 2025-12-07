@@ -1,7 +1,6 @@
 """Azure OpenAI embedding provider."""
 
 import os
-from typing import Any
 
 from libra.core.exceptions import EmbeddingError
 from libra.embedding.base import EmbeddingProvider

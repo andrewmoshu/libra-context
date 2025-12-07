@@ -1,7 +1,6 @@
 """HuggingFace Inference API embedding provider."""
 
 import os
-from typing import Any
 
 import httpx
 

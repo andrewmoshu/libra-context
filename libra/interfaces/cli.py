@@ -11,7 +11,7 @@ from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.table import Table
 
-from libra.core.config import LibraConfig
+from libra.core.config import EmbeddingConfig, LibraConfig, LLMConfig
 from libra.core.models import ContextType, LibrarianMode
 from libra.service import LibraService
 
@@ -914,9 +914,6 @@ def init(
     # Step 3: Configure API keys and provider-specific settings
     console.print("\n[bold]Step 3: Configure Provider Settings[/bold]\n")
 
-    # Build configuration
-    from libra.core.config import EmbeddingConfig, LLMConfig
-
     llm_config = _configure_llm_provider(selected_llm)
     embedding_config = _configure_embedding_provider(selected_embedding)
 
@@ -1008,11 +1005,11 @@ def _prompt_provider_selection(
     providers: list[dict], provider_type: str, default: str
 ) -> str:
     """Prompt user to select a provider."""
-    provider_names = [p["name"] for p in providers]
-    provider_map = {str(i): p["name"] for i, p in enumerate(providers, 1)}
+    provider_names: list[str] = [str(p["name"]) for p in providers]
+    provider_map: dict[str, str] = {str(i): str(p["name"]) for i, p in enumerate(providers, 1)}
 
     while True:
-        choice = typer.prompt(
+        choice: str = typer.prompt(
             f"Select {provider_type} provider (name or number)",
             default=default,
             show_default=True,
@@ -1023,17 +1020,16 @@ def _prompt_provider_selection(
             return provider_map[choice]
 
         # Check if it's a name
-        if choice.lower() in provider_names:
-            return choice.lower()
+        choice_lower = choice.lower()
+        if choice_lower in provider_names:
+            return choice_lower
 
         console.print(f"[red]Invalid choice. Enter a number (1-{len(providers)}) or provider name.[/red]")
 
 
-def _configure_llm_provider(provider: dict) -> "LLMConfig":
+def _configure_llm_provider(provider: dict) -> LLMConfig:
     """Configure LLM provider settings."""
     import os
-
-    from libra.core.config import LLMConfig
 
     config = LLMConfig()
     config.provider = provider["name"]
@@ -1117,11 +1113,9 @@ def _configure_llm_provider(provider: dict) -> "LLMConfig":
     return config
 
 
-def _configure_embedding_provider(provider: dict) -> "EmbeddingConfig":
+def _configure_embedding_provider(provider: dict) -> EmbeddingConfig:
     """Configure embedding provider settings."""
     import os
-
-    from libra.core.config import EmbeddingConfig
 
     config = EmbeddingConfig()
     config.provider = provider["name"]

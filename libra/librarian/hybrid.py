@@ -43,6 +43,8 @@ class HybridLibrarian(Librarian):
         self.rules_librarian = RulesLibrarian(rules=rules)
 
         # Create LLM librarian with priority: provider > config > legacy
+        # Type is Librarian (base class) to allow either GenericLLMLibrarian or GeminiLibrarian
+        self.llm_librarian: Librarian
         if llm_provider is not None:
             self.llm_librarian = GenericLLMLibrarian(llm_provider=llm_provider)
         elif llm_config is not None:

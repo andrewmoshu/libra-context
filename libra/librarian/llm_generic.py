@@ -1,6 +1,5 @@
 """Generic LLM-based Librarian using the LLM provider abstraction."""
 
-import json
 from typing import Any
 
 from libra.core.config import LLMConfig
