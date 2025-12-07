@@ -2,11 +2,11 @@
 name = "libra-context"
 version = "0.1.0"
 description = "Intelligent Context Orchestration for AI Agents"
-readme = "libra-project-specification.md"
+readme = "README.md"
 requires-python = ">=3.11"
-license = { text = "MIT" }
+license = { file = "LICENSE" }
 authors = [
-    { name = "libra team", email = "team@libra-context.io" }
+    { name = "Andrii Moshurenko", email = "moshurenkoaa@gmail.com" }
 ]
 keywords = [
     "ai",
@@ -20,7 +20,7 @@ keywords = [
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
+    "License :: Other/Proprietary License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",

@@ -226,4 +226,6 @@ black libra/ tests/
 
 ## License
 
-MIT License - see LICENSE file for details.
+Business Source License 1.1 - see LICENSE file for details.
+
+This project is licensed under the Business Source License 1.1. After 4 years, the license automatically converts to Apache License 2.0.
