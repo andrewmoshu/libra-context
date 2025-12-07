@@ -612,6 +612,153 @@ def import_contexts(
     console.print(f"[green]Imported {count} contexts from {input_file}[/green]")
 
 
+@app.command("chat")
+def chat_command(
+    max_tokens: int = typer.Option(3000, "--max-tokens", "-m", help="Token budget for context"),
+) -> None:
+    """Interactive chat with the Librarian about your contexts.
+
+    Ask questions about what contexts you have, get recommendations,
+    and have the Librarian help you understand your knowledge base.
+    """
+    import os
+
+    import google.generativeai as genai
+
+    service = get_service()
+
+    # Check for API key
+    api_key = os.environ.get("GOOGLE_AI_API_KEY")
+    if not api_key:
+        console.print("[red]GOOGLE_AI_API_KEY environment variable is required for chat mode.[/red]")
+        raise typer.Exit(1)
+
+    genai.configure(api_key=api_key)
+
+    # Get stats for system context
+    stats = service.get_stats()
+    by_type = stats.get("contexts_by_type", {})
+    total_contexts = stats.get("total_contexts", 0)
+
+    # Build system prompt with context about the user's knowledge base
+    system_prompt = f"""You are the libra Librarian, an intelligent assistant that helps users
+understand and work with their personal knowledge base.
+
+Current knowledge base statistics:
+- Total contexts: {total_contexts}
+- Knowledge items: {by_type.get('knowledge', 0)}
+- Preferences: {by_type.get('preference', 0)}
+- History items: {by_type.get('history', 0)}
+
+You can help users:
+1. Understand what context they have stored
+2. Suggest how to organize their knowledge
+3. Answer questions about their stored information
+4. Recommend new contexts to add based on their needs
+
+Be helpful, concise, and proactive in suggesting how to improve their context library.
+When asked about specific topics, you can search the knowledge base and provide relevant information."""
+
+    # Initialize chat model
+    model = genai.GenerativeModel(
+        model_name=service.config.librarian.llm.model,
+        system_instruction=system_prompt,
+    )
+    chat = model.start_chat()
+
+    console.print(Panel(
+        f"[blue]Welcome to libra Chat![/blue]\n\n"
+        f"You have {total_contexts} contexts in your knowledge base.\n"
+        f"Ask me anything about your stored information.\n\n"
+        f"[dim]Type 'quit' or 'exit' to leave, 'help' for commands.[/dim]",
+        title="🔮 Librarian Chat",
+    ))
+
+    while True:
+        try:
+            user_input = console.input("\n[bold green]You:[/bold green] ").strip()
+        except (KeyboardInterrupt, EOFError):
+            console.print("\n[dim]Goodbye![/dim]")
+            break
+
+        if not user_input:
+            continue
+
+        if user_input.lower() in ("quit", "exit", "q"):
+            console.print("[dim]Goodbye![/dim]")
+            break
+
+        if user_input.lower() == "help":
+            console.print(Panel(
+                "[bold]Available commands:[/bold]\n\n"
+                "• quit/exit/q - Exit chat\n"
+                "• help - Show this help\n"
+                "• /search <query> - Search your contexts\n"
+                "• /stats - Show knowledge base statistics\n\n"
+                "[bold]Or just ask anything about your knowledge base![/bold]",
+                title="Help",
+            ))
+            continue
+
+        if user_input.startswith("/search "):
+            query = user_input[8:].strip()
+            if query:
+                results = service.search_contexts(query=query, limit=5)
+                if results:
+                    console.print(f"\n[bold]Found {len(results)} results for '{query}':[/bold]")
+                    for ctx, score in results:
+                        preview = ctx.content[:100].replace("\n", " ")
+                        console.print(f"  [{ctx.type}] {preview}... (score: {score:.2f})")
+                else:
+                    console.print(f"[yellow]No results found for '{query}'[/yellow]")
+            continue
+
+        if user_input.lower() == "/stats":
+            console.print(Panel(
+                f"[bold]Total Contexts:[/bold] {stats.get('total_contexts', 0)}\n"
+                f"[bold]With Embeddings:[/bold] {stats.get('contexts_with_embeddings', 0)}\n"
+                f"[bold]Audit Entries:[/bold] {stats.get('total_audit_entries', 0)}\n\n"
+                f"[bold]By Type:[/bold]\n" +
+                "\n".join(f"  {t}: {c}" for t, c in stats.items() if t == "contexts_by_type" for t, c in stats.get("contexts_by_type", {}).items()),
+                title="Statistics",
+            ))
+            continue
+
+        # For other queries, first check if we should include context from the knowledge base
+        enriched_prompt = user_input
+
+        # If the user seems to be asking about specific topics, fetch relevant context
+        search_keywords = ["what", "how", "tell me", "show", "find", "about", "information", "know"]
+        if any(kw in user_input.lower() for kw in search_keywords):
+            try:
+                response = service.query(
+                    task=user_input,
+                    max_tokens=max_tokens,
+                )
+                if response.contexts:
+                    context_text = "\n\n".join([
+                        f"[{sc.context.type.upper()}] {sc.context.content[:500]}"
+                        for sc in response.contexts[:3]
+                    ])
+                    enriched_prompt = f"""Based on the user's knowledge base, here's relevant context:
+
+{context_text}
+
+User question: {user_input}
+
+Please answer using the context above when relevant."""
+            except Exception:
+                pass  # Fall back to unenriched prompt
+
+        try:
+            with console.status("[bold blue]Thinking...[/bold blue]"):
+                chat_response = chat.send_message(enriched_prompt)
+
+            console.print(f"\n[bold blue]Librarian:[/bold blue] {chat_response.text}")
+        except Exception as e:
+            console.print(f"[red]Error: {e}[/red]")
+
+
 @app.command("init")
 def init() -> None:
     """Initialize libra (create config directory and default config)."""
