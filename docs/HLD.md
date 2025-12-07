@@ -12,6 +12,8 @@ libra is a local-first context orchestration platform that provides intelligent 
 4. **Budget Awareness**: Fits context within token limits while maximizing relevance
 5. **Auditability**: Complete trail of what context was served and why
 6. **Local-First**: All data stays on user's machine
+7. **Multi-Provider Support**: Works with 9 LLM providers and 9 embedding providers
+8. **Fully Local Option**: Ollama + sentence-transformers for complete offline operation
 
 ## 2. System Architecture
 
@@ -74,12 +76,17 @@ libra is a local-first context orchestration platform that provides intelligent 
 │                       └─────────────────┘                                │
 │                                                                          │
 │  ┌───────────────────────────────────────────────────────────────────┐  │
-│  │                      EMBEDDING LAYER                               │  │
+│  │                  EMBEDDING LAYER (Multi-Provider)                  │  │
 │  │                                                                    │  │
-│  │              ┌────────────────────────────────┐                   │  │
-│  │              │    Gemini Embedding Provider   │                   │  │
-│  │              │    (gemini-embedding-001)      │                   │  │
-│  │              └────────────────────────────────┘                   │  │
+│  │   ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌────────┐ │  │
+│  │   │  Gemini  │ │  OpenAI  │ │  Ollama  │ │  Local   │ │ Azure  │ │  │
+│  │   │(default) │ │          │ │          │ │(sent-tr) │ │ OpenAI │ │  │
+│  │   └──────────┘ └──────────┘ └──────────┘ └──────────┘ └────────┘ │  │
+│  │   ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐            │  │
+│  │   │ Bedrock  │ │HuggingFce│ │ Together │ │  Custom  │            │  │
+│  │   └──────────┘ └──────────┘ └──────────┘ └──────────┘            │  │
+│  │                                                                    │  │
+│  │              EmbeddingFactory → create_embedding_provider()       │  │
 │  │                                                                    │  │
 │  └───────────────────────────────────────────────────────────────────┘  │
 │                                                                          │
@@ -115,8 +122,9 @@ Provides multiple ways to interact with libra:
 The "brain" of libra:
 - **Librarian**: Selects and ranks contexts by task relevance
   - Rules mode: Pattern-based, fast, predictable
-  - LLM mode: Gemini-powered reasoning
+  - LLM mode: LLM-powered reasoning (9 providers supported)
   - Hybrid mode: Rules pre-filter + LLM final selection
+- **LLM Providers**: Gemini (default), OpenAI, Anthropic, Ollama, Azure OpenAI, AWS Bedrock, HuggingFace, Together AI, Custom
 - **Budget Manager**: Optimizes context selection within token limits
 
 #### Ingestion Layer
@@ -132,8 +140,10 @@ Persists all data locally:
 - **sqlite-vec**: Vector extension for embedding-based search
 
 #### Embedding Layer
-Generates vector representations:
-- **Gemini Embedding Provider**: Uses gemini-embedding-001 (768 dimensions)
+Generates vector representations for semantic search:
+- **9 Embedding Providers**: Gemini (default), OpenAI, Ollama, Local (sentence-transformers), Azure OpenAI, AWS Bedrock, HuggingFace, Together AI, Custom
+- **EmbeddingFactory**: Creates configured provider via `create_embedding_provider()`
+- **Configurable Dimensions**: Each provider supports different embedding dimensions
 
 ## 3. Data Flow
 
@@ -281,7 +291,16 @@ File/Directory Input              libra Processing                  Output
 
 ## 5. Technology Decisions
 
-### 5.1 Why Gemini?
+### 5.1 Multi-Provider Architecture
+
+libra supports 9 LLM providers and 9 embedding providers to give users maximum flexibility:
+
+| Layer | Supported Providers |
+|-------|---------------------|
+| **LLM** | Gemini (default), OpenAI, Anthropic, Ollama, Azure OpenAI, AWS Bedrock, HuggingFace, Together AI, Custom |
+| **Embeddings** | Gemini (default), OpenAI, Ollama, Local (sentence-transformers), Azure OpenAI, AWS Bedrock, HuggingFace, Together AI, Custom |
+
+#### Why Gemini as Default?
 
 | Consideration | Decision Rationale |
 |---------------|-------------------|
@@ -289,6 +308,13 @@ File/Directory Input              libra Processing                  Output
 | **Embeddings** | Gemini (gemini-embedding-001) - 768 dimensions, excellent quality, same API |
 | **Single API Key** | Both LLM and embeddings use one Google API key - simpler setup |
 | **Structured Output** | Native JSON mode for reliable Librarian responses |
+
+#### Fully Local Option
+
+For users requiring complete offline operation or maximum privacy:
+- **LLM**: Ollama with models like llama3.2, mistral, etc.
+- **Embeddings**: Local provider using sentence-transformers (all-MiniLM-L6-v2)
+- **No external API calls** - all processing happens locally
 
 ### 5.2 Why SQLite + sqlite-vec?
 
@@ -334,8 +360,9 @@ File/Directory Input              libra Processing                  Output
 - Rate limiting available (not enabled in MVP)
 
 ### Third-Party Considerations
-- Gemini API calls send content to Google servers
-- Local fallback available (sentence-transformers + Ollama)
+- Cloud providers (Gemini, OpenAI, Anthropic, etc.) send content to external servers
+- **Fully local option** available: Ollama (LLM) + sentence-transformers (embeddings)
+- Provider choice is user-configurable via `libra init` or config file
 - Clear disclosure in documentation
 
 ## 8. Deployment Options
