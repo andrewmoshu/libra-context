@@ -12,7 +12,7 @@ source/
 target/node_modules/
 target/package-lock.json
 *.log
-
+libra-project-specification.md
 # Python virtual environments
 .venv/
 venv/
