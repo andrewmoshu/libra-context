@@ -1,25 +1,21 @@
 """Tests for core data models and configuration."""
 
-import pytest
 from datetime import datetime
 from uuid import UUID
 
-from libra.core.models import (
-    Context,
-    ContextType,
-    AuditEntry,
-    ContextRequest,
-    ContextResponse,
-    ScoredContext,
-    LibrarianMode,
-    RequestSource,
-)
 from libra.core.config import LibraConfig, LibrarianRule
 from libra.core.exceptions import (
-    LibraError,
     ContextNotFoundError,
     EmbeddingError,
-    StorageError,
+    LibraError,
+)
+from libra.core.models import (
+    AuditEntry,
+    Context,
+    ContextRequest,
+    ContextType,
+    LibrarianMode,
+    ScoredContext,
 )
 
 

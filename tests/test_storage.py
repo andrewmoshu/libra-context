@@ -1,18 +1,19 @@
 """Tests for storage layer."""
 
-import pytest
 import tempfile
 from pathlib import Path
 from uuid import uuid4
 
+import pytest
+
+from libra.core.exceptions import ContextNotFoundError
 from libra.core.models import (
+    AuditEntry,
     Context,
     ContextType,
-    AuditEntry,
-    RequestSource,
     LibrarianMode,
+    RequestSource,
 )
-from libra.core.exceptions import ContextNotFoundError, StorageError
 from libra.storage.database import ContextStore
 
 

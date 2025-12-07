@@ -3,9 +3,9 @@
 import pytest
 
 from libra.core.config import LibrarianRule
-from libra.core.models import Context, ContextType, ContextRequest, ScoredContext
-from libra.librarian.rules import RulesLibrarian
+from libra.core.models import Context, ContextRequest, ContextType, ScoredContext
 from libra.librarian.budget import BudgetManager
+from libra.librarian.rules import RulesLibrarian
 
 
 class TestRulesLibrarian:

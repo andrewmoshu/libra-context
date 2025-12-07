@@ -1,13 +1,14 @@
 """Tests for ingestion layer."""
 
-import pytest
 import tempfile
 from pathlib import Path
 
-from libra.core.models import Context, ContextType
+import pytest
+
+from libra.core.models import ContextType
 from libra.ingestion.chunker import Chunker, ChunkResult
-from libra.ingestion.text import TextIngestor
 from libra.ingestion.markdown import MarkdownIngestor
+from libra.ingestion.text import TextIngestor
 
 
 class TestChunker:
