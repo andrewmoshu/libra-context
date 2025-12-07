@@ -94,7 +94,7 @@ class LibraService:
         if self._embedding_provider is None:
             if self.config.embedding.provider == "gemini":
                 self._embedding_provider = GeminiEmbeddingProvider(
-                    model=f"models/{self.config.embedding.model}",
+                    model=self.config.embedding.model,
                     output_dimensionality=self.config.embedding.dimensions,
                 )
             else:
