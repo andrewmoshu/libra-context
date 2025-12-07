@@ -1,9 +1,10 @@
-"""Gemini embedding provider using Google's Generative AI API."""
+"""Gemini embedding provider using Google's GenAI SDK."""
 
 import os
 from typing import Literal
 
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 
 from libra.core.exceptions import EmbeddingError
 from libra.embedding.base import EmbeddingProvider
@@ -21,14 +22,14 @@ class GeminiEmbeddingProvider(EmbeddingProvider):
     """Embedding provider using Google's Gemini API.
 
     Uses gemini-embedding-001 model by default (768 dimensions).
-    The new Gemini Embedding model supports up to 3072 dimensions but
+    The Gemini Embedding model supports up to 3072 dimensions but
     we default to 768 for backward compatibility with sqlite-vec storage.
-    Requires GOOGLE_AI_API_KEY environment variable.
+    Requires GOOGLE_AI_API_KEY or GEMINI_API_KEY environment variable.
     """
 
     def __init__(
         self,
-        model: str = "models/gemini-embedding-001",
+        model: str = "gemini-embedding-001",
         api_key: str | None = None,
         output_dimensionality: int = 768,
     ):
@@ -36,19 +37,21 @@ class GeminiEmbeddingProvider(EmbeddingProvider):
 
         Args:
             model: The embedding model to use
-            api_key: Google AI API key (or use GOOGLE_AI_API_KEY env var)
+            api_key: Google AI API key (or use GOOGLE_AI_API_KEY/GEMINI_API_KEY env var)
             output_dimensionality: Output vector dimensions (max 3072 for gemini-embedding-001)
         """
         self.model = model
         self._dimensions = output_dimensionality
 
-        # Configure the API
-        api_key = api_key or os.environ.get("GOOGLE_AI_API_KEY")
+        # Get API key from parameter or environment
+        api_key = api_key or os.environ.get("GOOGLE_AI_API_KEY") or os.environ.get("GEMINI_API_KEY")
         if not api_key:
             raise EmbeddingError(
-                "GOOGLE_AI_API_KEY environment variable is required for Gemini embeddings"
+                "GOOGLE_AI_API_KEY or GEMINI_API_KEY environment variable is required for Gemini embeddings"
             )
-        genai.configure(api_key=api_key)
+
+        # Initialize the client
+        self._client = genai.Client(api_key=api_key)
 
     @property
     def dimensions(self) -> int:
@@ -70,13 +73,15 @@ class GeminiEmbeddingProvider(EmbeddingProvider):
             A list of floats representing the embedding vector
         """
         try:
-            result = genai.embed_content(
+            result = self._client.models.embed_content(
                 model=self.model,
-                content=text,
-                task_type=task_type,
-                output_dimensionality=self._dimensions,
+                contents=text,
+                config=types.EmbedContentConfig(
+                    task_type=task_type,
+                    output_dimensionality=self._dimensions,
+                ),
             )
-            return result["embedding"]
+            return list(result.embeddings[0].values)
         except Exception as e:
             raise EmbeddingError(f"Failed to generate embedding: {e}", e)
 
@@ -98,19 +103,15 @@ class GeminiEmbeddingProvider(EmbeddingProvider):
             return []
 
         try:
-            result = genai.embed_content(
+            result = self._client.models.embed_content(
                 model=self.model,
-                content=texts,
-                task_type=task_type,
-                output_dimensionality=self._dimensions,
+                contents=texts,
+                config=types.EmbedContentConfig(
+                    task_type=task_type,
+                    output_dimensionality=self._dimensions,
+                ),
             )
-            # When batching, result["embedding"] is already a list of embeddings
-            embeddings = result["embedding"]
-            # Ensure we return list[list[float]] - handle edge case of single text
-            if embeddings and not isinstance(embeddings[0], list):
-                # Single text was passed, returned single embedding
-                return [embeddings]
-            return embeddings  # type: ignore[return-value]
+            return [list(emb.values) for emb in result.embeddings]
         except Exception as e:
             raise EmbeddingError(f"Failed to generate batch embeddings: {e}", e)
 
