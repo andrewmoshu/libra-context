@@ -1,7 +1,7 @@
 """Custom HTTP endpoint LLM provider."""
 
 import os
-from typing import Any
+from typing import Any, cast
 
 import httpx
 
@@ -119,11 +119,12 @@ class CustomLLMProvider(LLMProvider):
                 choices = data.get("choices", [])
                 if choices:
                     message = choices[0].get("message", {})
-                    return message.get("content", "")
+                    return cast(str, message.get("content", ""))
                 return ""
             else:
                 # Simple format: {"response": "..."} or {"text": "..."}
-                return data.get("response") or data.get("text") or str(data)
+                result = data.get("response") or data.get("text")
+                return str(result) if result is not None else str(data)
 
         except httpx.HTTPStatusError as e:
             raise LibrarianError(
