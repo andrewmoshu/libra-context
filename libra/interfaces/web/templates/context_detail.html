@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Context Detail{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>
+        <span class="type-badge type-{{ context.type }}">{{ context.type }}</span>
+        Context Details
+    </h1>
+    <p>ID: {{ context.id }}</p>
+</div>
+
+<div class="context-detail">
+    <div class="context-main">
+        <div class="card">
+            <div class="card-header">Content</div>
+            <div class="card-body">
+                <div class="content-full">{{ context.content }}</div>
+            </div>
+        </div>
+
+        {% if context.tags %}
+        <div class="card" style="margin-top: 1rem;">
+            <div class="card-header">Tags</div>
+            <div class="card-body">
+                {% for tag in context.tags %}
+                <span class="tag tag-default">{{ tag }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div style="margin-top: 1.5rem;">
+            <a href="{{ url_for('edit_context_page', context_id=context.id) }}" class="btn btn-primary">Edit</a>
+            <a href="{{ url_for('delete_context_confirm', context_id=context.id) }}" class="btn btn-danger">Delete</a>
+            <a href="{{ url_for('contexts_list') }}" class="btn btn-secondary">Back to List</a>
+        </div>
+    </div>
+
+    <div class="context-sidebar">
+        <div class="card">
+            <div class="card-header">Metadata</div>
+            <div class="card-body">
+                <ul class="meta-list">
+                    <li>
+                        <span class="meta-label">Type</span>
+                        <span>{{ context.type }}</span>
+                    </li>
+                    <li>
+                        <span class="meta-label">Source</span>
+                        <span>{{ context.source }}</span>
+                    </li>
+                    <li>
+                        <span class="meta-label">Created</span>
+                        <span>{{ context.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                    </li>
+                    <li>
+                        <span class="meta-label">Updated</span>
+                        <span>{{ context.updated_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                    </li>
+                    <li>
+                        <span class="meta-label">Last Accessed</span>
+                        <span>
+                            {% if context.accessed_at %}
+                            {{ context.accessed_at.strftime('%Y-%m-%d %H:%M') }}
+                            {% else %}
+                            Never
+                            {% endif %}
+                        </span>
+                    </li>
+                    <li>
+                        <span class="meta-label">Access Count</span>
+                        <span>{{ context.access_count }}</span>
+                    </li>
+                    <li>
+                        <span class="meta-label">Has Embedding</span>
+                        <span>{{ 'Yes' if context.embedding else 'No' }}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

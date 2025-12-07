@@ -369,6 +369,8 @@ def serve(
     """Start the libra server (MCP stdio mode by default)."""
     if http or all_servers:
         console.print(f"[blue]Starting HTTP server on {host}:{port}...[/blue]")
+        console.print(f"[dim]Web UI: http://{host}:{port}/[/dim]")
+        console.print(f"[dim]API Docs: http://{host}:{port}/docs[/dim]")
         try:
             from libra.interfaces.api import run_server
             run_server(host=host, port=port)

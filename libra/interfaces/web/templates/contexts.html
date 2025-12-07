@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}Contexts{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Contexts</h1>
+    <p>Manage your context store</p>
+</div>
+
+<form method="GET" action="{{ url_for('contexts_list') }}">
+    <div class="filters">
+        <div class="form-group">
+            <label for="type">Type</label>
+            <select name="type" id="type">
+                <option value="">All Types</option>
+                <option value="knowledge" {% if filter_type == 'knowledge' %}selected{% endif %}>Knowledge</option>
+                <option value="preference" {% if filter_type == 'preference' %}selected{% endif %}>Preference</option>
+                <option value="history" {% if filter_type == 'history' %}selected{% endif %}>History</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="tags">Tags</label>
+            <input type="text" name="tags" id="tags" placeholder="tag1, tag2" value="{{ filter_tags or '' }}">
+        </div>
+        <div class="form-group">
+            <label for="search">Search</label>
+            <input type="text" name="search" id="search" placeholder="Search content..." value="{{ search_query or '' }}">
+        </div>
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary">Filter</button>
+            <a href="{{ url_for('contexts_list') }}" class="btn btn-secondary">Clear</a>
+        </div>
+    </div>
+</form>
+
+{% if contexts %}
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Type</th>
+                <th>Content</th>
+                <th>Tags</th>
+                <th>Source</th>
+                <th>Created</th>
+                <th>Accessed</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ctx in contexts %}
+            <tr>
+                <td><span class="type-badge type-{{ ctx.type }}">{{ ctx.type }}</span></td>
+                <td class="content-preview">
+                    <a href="{{ url_for('context_detail', context_id=ctx.id) }}">{{ ctx.content[:80] }}{% if ctx.content|length > 80 %}...{% endif %}</a>
+                </td>
+                <td>
+                    {% for tag in ctx.tags[:3] %}
+                    <span class="tag tag-default">{{ tag }}</span>
+                    {% endfor %}
+                    {% if ctx.tags|length > 3 %}
+                    <span class="tag tag-default">+{{ ctx.tags|length - 3 }}</span>
+                    {% endif %}
+                </td>
+                <td>{{ ctx.source[:20] }}{% if ctx.source|length > 20 %}...{% endif %}</td>
+                <td>{{ ctx.created_at.strftime('%Y-%m-%d') }}</td>
+                <td>
+                    {% if ctx.accessed_at %}
+                    {{ ctx.accessed_at.strftime('%Y-%m-%d') }}
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+                <td class="actions">
+                    <a href="{{ url_for('context_detail', context_id=ctx.id) }}">View</a>
+                    <a href="{{ url_for('edit_context_page', context_id=ctx.id) }}">Edit</a>
+                    <a href="{{ url_for('delete_context_confirm', context_id=ctx.id) }}" style="color: var(--color-danger);">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if total_pages > 1 %}
+<div class="pagination">
+    {% if current_page > 1 %}
+    <a href="{{ url_for('contexts_list', page=current_page - 1, type=filter_type, tags=filter_tags, search=search_query) }}">&laquo; Prev</a>
+    {% else %}
+    <span class="disabled">&laquo; Prev</span>
+    {% endif %}
+
+    {% for p in range(1, total_pages + 1) %}
+        {% if p == current_page %}
+        <span class="active">{{ p }}</span>
+        {% elif p == 1 or p == total_pages or (p >= current_page - 2 and p <= current_page + 2) %}
+        <a href="{{ url_for('contexts_list', page=p, type=filter_type, tags=filter_tags, search=search_query) }}">{{ p }}</a>
+        {% elif p == current_page - 3 or p == current_page + 3 %}
+        <span>...</span>
+        {% endif %}
+    {% endfor %}
+
+    {% if current_page < total_pages %}
+    <a href="{{ url_for('contexts_list', page=current_page + 1, type=filter_type, tags=filter_tags, search=search_query) }}">Next &raquo;</a>
+    {% else %}
+    <span class="disabled">Next &raquo;</span>
+    {% endif %}
+</div>
+{% endif %}
+
+<p style="margin-top: 1rem; color: var(--color-text-muted);">
+    Showing {{ contexts|length }} of {{ total_contexts }} contexts
+</p>
+{% else %}
+<div class="empty-state">
+    <h3>No contexts found</h3>
+    {% if filter_type or filter_tags or search_query %}
+    <p>Try adjusting your filters or <a href="{{ url_for('contexts_list') }}">clear all filters</a>.</p>
+    {% else %}
+    <p><a href="{{ url_for('add_context_page') }}">Add your first context</a> to get started.</p>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

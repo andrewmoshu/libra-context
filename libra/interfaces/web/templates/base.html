@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}libra{% endblock %} - Context Orchestration</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <a href="{{ url_for('dashboard') }}">libra</a>
+        </div>
+        <ul class="nav-links">
+            <li><a href="{{ url_for('dashboard') }}" {% if active_page == 'dashboard' %}class="active"{% endif %}>Dashboard</a></li>
+            <li><a href="{{ url_for('contexts_list') }}" {% if active_page == 'contexts' %}class="active"{% endif %}>Contexts</a></li>
+            <li><a href="{{ url_for('add_context_page') }}" {% if active_page == 'add' %}class="active"{% endif %}>Add Context</a></li>
+            <li><a href="{{ url_for('audit_page') }}" {% if active_page == 'audit' %}class="active"{% endif %}>Audit Log</a></li>
+            <li><a href="{{ url_for('settings_page') }}" {% if active_page == 'settings' %}class="active"{% endif %}>Settings</a></li>
+        </ul>
+    </nav>
+
+    <main class="container">
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="message message-{{ message.type }}">
+                {{ message.text }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <p>libra v0.1.0 - Intelligent Context Orchestration for AI Agents</p>
+    </footer>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

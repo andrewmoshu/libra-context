@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Dashboard</h1>
+    <p>Overview of your context store</p>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.total_contexts }}</div>
+        <div class="stat-label">Total Contexts</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.contexts_with_embeddings }}</div>
+        <div class="stat-label">With Embeddings</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.total_audit_entries }}</div>
+        <div class="stat-label">Queries Served</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.contexts_by_type.get('knowledge', 0) }}</div>
+        <div class="stat-label">Knowledge</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.contexts_by_type.get('preference', 0) }}</div>
+        <div class="stat-label">Preferences</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.contexts_by_type.get('history', 0) }}</div>
+        <div class="stat-label">History</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">Recent Activity</div>
+    <div class="card-body">
+        {% if recent_audit %}
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Agent</th>
+                        <th>Task</th>
+                        <th>Contexts</th>
+                        <th>Tokens</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in recent_audit %}
+                    <tr>
+                        <td>{{ entry.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>{{ entry.agent_id or 'anonymous' }}</td>
+                        <td class="content-preview">{{ entry.task }}</td>
+                        <td>{{ entry.contexts_served|length }}</td>
+                        <td>{{ entry.tokens_used }}/{{ entry.tokens_budget }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <p style="margin-top: 1rem; text-align: right;">
+            <a href="{{ url_for('audit_page') }}">View all activity &rarr;</a>
+        </p>
+        {% else %}
+        <div class="empty-state">
+            <h3>No activity yet</h3>
+            <p>Start querying contexts to see activity here.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card" style="margin-top: 1.5rem;">
+    <div class="card-header">Recent Contexts</div>
+    <div class="card-body">
+        {% if recent_contexts %}
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Content</th>
+                        <th>Tags</th>
+                        <th>Created</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ctx in recent_contexts %}
+                    <tr>
+                        <td><span class="type-badge type-{{ ctx.type }}">{{ ctx.type }}</span></td>
+                        <td class="content-preview">
+                            <a href="{{ url_for('context_detail', context_id=ctx.id) }}">{{ ctx.content[:100] }}</a>
+                        </td>
+                        <td>
+                            {% for tag in ctx.tags[:3] %}
+                            <span class="tag tag-default">{{ tag }}</span>
+                            {% endfor %}
+                            {% if ctx.tags|length > 3 %}
+                            <span class="tag tag-default">+{{ ctx.tags|length - 3 }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ ctx.created_at.strftime('%Y-%m-%d') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <p style="margin-top: 1rem; text-align: right;">
+            <a href="{{ url_for('contexts_list') }}">View all contexts &rarr;</a>
+        </p>
+        {% else %}
+        <div class="empty-state">
+            <h3>No contexts yet</h3>
+            <p><a href="{{ url_for('add_context_page') }}">Add your first context</a> to get started.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

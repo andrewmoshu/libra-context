@@ -581,18 +581,40 @@ def get_config() -> dict[str, object]:
     }
 
 
-def create_api_app() -> FastAPI:
-    """Create and return the FastAPI app."""
+def create_api_app(include_web_ui: bool = True) -> FastAPI:
+    """Create and return the FastAPI app.
+
+    Args:
+        include_web_ui: Whether to include the Web UI routes and static files
+    """
+    if include_web_ui:
+        from libra.interfaces.web import setup_web_ui
+
+        service = get_service()
+        setup_web_ui(app, service)
+
     return app
 
 
-def run_server(host: str = "127.0.0.1", port: int = 8377) -> None:
-    """Run the API server."""
+def run_server(host: str = "127.0.0.1", port: int = 8377, include_web_ui: bool = True) -> None:
+    """Run the API server.
+
+    Args:
+        host: Host to bind to
+        port: Port to listen on
+        include_web_ui: Whether to include the Web UI
+    """
     import uvicorn
 
     # Setup CORS if configured
     service = get_service()
     setup_cors(service.config)
+
+    # Setup Web UI if requested
+    if include_web_ui:
+        from libra.interfaces.web import setup_web_ui
+
+        setup_web_ui(app, service)
 
     uvicorn.run(app, host=host, port=port)
 

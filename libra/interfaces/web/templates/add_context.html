@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Add Context{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Add Context</h1>
+    <p>Add new context to your knowledge base</p>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('add_context_submit') }}">
+            <div class="form-group">
+                <label for="type">Context Type</label>
+                <select name="type" id="type" required>
+                    <option value="knowledge" {% if form_data and form_data.type == 'knowledge' %}selected{% endif %}>Knowledge - Facts, documentation, reference material</option>
+                    <option value="preference" {% if form_data and form_data.type == 'preference' %}selected{% endif %}>Preference - How you like things done</option>
+                    <option value="history" {% if form_data and form_data.type == 'history' %}selected{% endif %}>History - Past interactions, decisions, events</option>
+                </select>
+                <p class="form-hint">Select the type that best describes this context</p>
+            </div>
+
+            <div class="form-group">
+                <label for="content">Content</label>
+                <textarea name="content" id="content" required placeholder="Enter the context content...">{{ form_data.content if form_data else '' }}</textarea>
+                <p class="form-hint">The actual information to store</p>
+            </div>
+
+            <div class="form-group">
+                <label for="tags">Tags</label>
+                <input type="text" name="tags" id="tags" placeholder="coding, api, python" value="{{ form_data.tags if form_data else '' }}">
+                <p class="form-hint">Comma-separated labels for organization</p>
+            </div>
+
+            <div class="form-group">
+                <label for="source">Source</label>
+                <input type="text" name="source" id="source" placeholder="manual" value="{{ form_data.source if form_data else 'manual' }}">
+                <p class="form-hint">Where this context came from</p>
+            </div>
+
+            <div style="margin-top: 1.5rem;">
+                <button type="submit" class="btn btn-primary">Add Context</button>
+                <a href="{{ url_for('contexts_list') }}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

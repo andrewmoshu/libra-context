@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Settings{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Settings</h1>
+    <p>Configure libra</p>
+</div>
+
+<div class="settings-section">
+    <h2>Current Configuration</h2>
+    <div class="card">
+        <div class="card-body">
+            <ul class="meta-list">
+                <li>
+                    <span class="meta-label">Librarian Mode</span>
+                    <span>{{ config.librarian_mode }}</span>
+                </li>
+                <li>
+                    <span class="meta-label">Embedding Provider</span>
+                    <span>{{ config.embedding_provider }}</span>
+                </li>
+                <li>
+                    <span class="meta-label">Embedding Model</span>
+                    <span>{{ config.embedding_model }}</span>
+                </li>
+                <li>
+                    <span class="meta-label">Default Token Budget</span>
+                    <span>{{ config.default_token_budget }}</span>
+                </li>
+                <li>
+                    <span class="meta-label">Default Chunk Size</span>
+                    <span>{{ config.default_chunk_size }}</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="settings-section">
+    <h2>Data Storage</h2>
+    <div class="card">
+        <div class="card-body">
+            <ul class="meta-list">
+                <li>
+                    <span class="meta-label">Database Path</span>
+                    <span>{{ db_path }}</span>
+                </li>
+                <li>
+                    <span class="meta-label">Total Contexts</span>
+                    <span>{{ stats.total_contexts }}</span>
+                </li>
+                <li>
+                    <span class="meta-label">Contexts with Embeddings</span>
+                    <span>{{ stats.contexts_with_embeddings }}</span>
+                </li>
+                <li>
+                    <span class="meta-label">Total Audit Entries</span>
+                    <span>{{ stats.total_audit_entries }}</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="settings-section">
+    <h2>Librarian Rules</h2>
+    <div class="card">
+        <div class="card-body">
+            <p class="form-hint" style="margin-bottom: 1rem;">
+                Rules are pattern-action pairs that boost or penalize context types based on task patterns.
+            </p>
+            {% if rules %}
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Pattern</th>
+                            <th>Boost Types</th>
+                            <th>Boost Tags</th>
+                            <th>Weight</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for rule in rules %}
+                        <tr>
+                            <td><code>{{ rule.pattern }}</code></td>
+                            <td>
+                                {% for t in rule.boost_types %}
+                                <span class="tag tag-{{ t }}">{{ t }}</span>
+                                {% endfor %}
+                            </td>
+                            <td>
+                                {% for tag in rule.boost_tags %}
+                                <span class="tag tag-default">{{ tag }}</span>
+                                {% endfor %}
+                            </td>
+                            <td>{{ rule.weight }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p>No custom rules configured. Using default rules.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="settings-section">
+    <h2>API Endpoints</h2>
+    <div class="card">
+        <div class="card-body">
+            <ul class="meta-list">
+                <li>
+                    <span class="meta-label">API Documentation</span>
+                    <a href="/docs" target="_blank">/docs (Swagger UI)</a>
+                </li>
+                <li>
+                    <span class="meta-label">Alternative Docs</span>
+                    <a href="/redoc" target="_blank">/redoc (ReDoc)</a>
+                </li>
+                <li>
+                    <span class="meta-label">Health Check</span>
+                    <a href="/api/v1/health" target="_blank">/api/v1/health</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="settings-section">
+    <h2>Export / Import</h2>
+    <div class="card">
+        <div class="card-body">
+            <p>Export your contexts for backup or import into another instance.</p>
+            <div style="margin-top: 1rem;">
+                <a href="{{ url_for('export_contexts') }}" class="btn btn-primary">Export All Contexts</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
