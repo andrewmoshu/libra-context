@@ -7,14 +7,11 @@ context storage, retrieval, and intelligent selection.
 import logging
 import time
 from collections.abc import Callable
-from datetime import datetime
 from pathlib import Path
 from typing import Any
 from uuid import UUID
 
 from libra.core.config import LibraConfig
-
-logger = logging.getLogger("libra.service")
 from libra.core.exceptions import LibraError
 from libra.core.models import (
     AuditEntry,
@@ -22,9 +19,7 @@ from libra.core.models import (
     ContextRequest,
     ContextResponse,
     ContextType,
-    LibrarianMode,
     RequestSource,
-    ScoredContext,
 )
 from libra.embedding.base import EmbeddingProvider
 from libra.embedding.gemini import GeminiEmbeddingProvider
@@ -36,6 +31,8 @@ from libra.librarian.base import Librarian
 from libra.librarian.budget import BudgetManager
 from libra.librarian.hybrid import create_librarian
 from libra.storage.database import ContextStore
+
+logger = logging.getLogger("libra.service")
 
 
 class LibraService:

@@ -8,7 +8,6 @@ import google.generativeai as genai
 from libra.core.exceptions import EmbeddingError
 from libra.embedding.base import EmbeddingProvider
 
-
 TaskType = Literal[
     "RETRIEVAL_QUERY",
     "RETRIEVAL_DOCUMENT",

@@ -85,14 +85,6 @@ class Chunker:
         """
         segments = []
 
-        # Patterns for boundaries (in order of priority)
-        patterns = [
-            r"```[\s\S]*?```",  # Code blocks
-            r"^#{1,6}\s+.*$",  # Markdown headers
-            r"\n\n+",  # Paragraph breaks
-            r"\n",  # Line breaks
-        ]
-
         # First, extract code blocks as they should stay intact
         code_block_pattern = re.compile(r"```[\s\S]*?```", re.MULTILINE)
         current_pos = 0

@@ -2,7 +2,6 @@
 
 import json
 import os
-from typing import Any
 
 import google.generativeai as genai
 from google.generativeai.types import GenerationConfig
@@ -10,7 +9,6 @@ from google.generativeai.types import GenerationConfig
 from libra.core.exceptions import LibrarianError
 from libra.core.models import Context, ContextRequest, ScoredContext
 from libra.librarian.base import Librarian
-
 
 SELECTION_PROMPT = """You are an intelligent context selector for an AI assistant.
 

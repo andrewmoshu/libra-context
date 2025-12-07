@@ -12,15 +12,14 @@ Provides HTTP endpoints for programmatic access to libra:
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
-from uuid import UUID
 
-from fastapi import FastAPI, HTTPException, Query, UploadFile, File
+from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from libra.core.config import LibraConfig
 from libra.core.exceptions import ContextNotFoundError
-from libra.core.models import ContextType, LibrarianMode, RequestSource
+from libra.core.models import ContextType, RequestSource
 from libra.service import LibraService
 
 # API Models

@@ -103,6 +103,8 @@ select = [
 ]
 ignore = [
     "E501",  # line too long (handled by black)
+    "B008",  # function call in default argument (ok for FastAPI/Typer)
+    "B904",  # raise from - we include exception info in message already
 ]
 
 [tool.mypy]

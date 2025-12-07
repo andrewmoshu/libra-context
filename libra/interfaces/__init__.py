@@ -6,7 +6,7 @@ Provides multiple ways to interact with libra:
 - CLI for management and scripting
 """
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     import typer

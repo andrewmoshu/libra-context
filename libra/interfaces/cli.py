@@ -2,8 +2,6 @@
 
 import json
 import subprocess
-import sys
-from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
@@ -151,7 +149,7 @@ def show_context(
 
     try:
         context = service.get_context(context_id)
-    except Exception as e:
+    except Exception:
         console.print(f"[red]Context not found: {context_id}[/red]")
         raise typer.Exit(1)
 
@@ -164,7 +162,7 @@ def show_context(
         f"[bold]Accessed:[/bold] {context.accessed_at.isoformat() if context.accessed_at else 'never'}\n"
         f"[bold]Access Count:[/bold] {context.access_count}\n\n"
         f"[bold]Content:[/bold]\n{context.content}",
-        title=f"Context Details",
+        title="Context Details",
     ))
 
 
@@ -343,7 +341,7 @@ def ingest(
         TextColumn("[progress.description]{task.description}"),
         console=console,
     ) as progress:
-        task = progress.add_task("Ingesting...", total=None)
+        progress.add_task("Ingesting...", total=None)
 
         if path.is_file():
             contexts = service.ingest_file(path, context_type, tag_list)

@@ -59,8 +59,8 @@ class DirectoryIngestor(Ingestor):
 
     def _register_default_ingestors(self) -> None:
         """Register default file type ingestors."""
-        from libra.ingestion.text import TextIngestor
         from libra.ingestion.markdown import MarkdownIngestor
+        from libra.ingestion.text import TextIngestor
 
         text_ingestor = TextIngestor(chunker=self.chunker, encoding=self.encoding)
         markdown_ingestor = MarkdownIngestor(chunker=self.chunker, encoding=self.encoding)
@@ -132,7 +132,7 @@ class DirectoryIngestor(Ingestor):
             try:
                 contexts = self._ingest_file(file_path, context_type, tags, path)
                 all_contexts.extend(contexts)
-            except Exception as e:
+            except Exception:
                 # Log but continue on individual file failures
                 continue
 

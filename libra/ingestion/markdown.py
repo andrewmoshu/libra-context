@@ -202,7 +202,6 @@ class MarkdownIngestor(Ingestor):
         sections: list[tuple[str, str]] = []
         current_header = "Introduction"
         current_content: list[str] = []
-        current_level = 0
 
         lines = content.split("\n")
         i = 0
@@ -225,7 +224,6 @@ class MarkdownIngestor(Ingestor):
 
                     current_header = header_text
                     current_content = [line]  # Include header in content
-                    current_level = level
                 else:
                     current_content.append(line)
             else:

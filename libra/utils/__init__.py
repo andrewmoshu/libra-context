@@ -1,7 +1,7 @@
 """Utility functions for libra."""
 
+from libra.utils.logging import get_default_logger, get_logger, setup_logging
 from libra.utils.tokens import count_tokens, estimate_tokens, truncate_to_tokens
-from libra.utils.logging import setup_logging, get_logger, get_default_logger
 
 __all__ = [
     "count_tokens",
