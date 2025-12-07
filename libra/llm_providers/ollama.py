@@ -1,5 +1,7 @@
 """Ollama LLM provider for local models."""
 
+from typing import Any, cast
+
 import httpx
 
 from libra.core.exceptions import LibrarianError
@@ -55,20 +57,19 @@ class OllamaLLMProvider(LLMProvider):
             The generated text response
         """
         try:
-            payload = {
+            options: dict[str, Any] = {"temperature": temperature}
+            if max_tokens is not None:
+                options["num_predict"] = max_tokens
+
+            payload: dict[str, Any] = {
                 "model": self._model,
                 "prompt": prompt,
                 "stream": False,
-                "options": {
-                    "temperature": temperature,
-                },
+                "options": options,
             }
 
             if json_mode:
                 payload["format"] = "json"
-
-            if max_tokens is not None:
-                payload["options"]["num_predict"] = max_tokens
 
             response = self._client.post(
                 f"{self.base_url}/api/generate",
@@ -77,7 +78,7 @@ class OllamaLLMProvider(LLMProvider):
             response.raise_for_status()
             data = response.json()
 
-            return data.get("response", "")
+            return cast(str, data.get("response", ""))
 
         except httpx.ConnectError as e:
             raise LibrarianError(
