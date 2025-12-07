@@ -1,5 +1,7 @@
 """Local embedding provider using sentence-transformers."""
 
+from typing import cast
+
 from libra.core.exceptions import EmbeddingError
 from libra.embedding.base import EmbeddingProvider
 
@@ -76,7 +78,7 @@ class LocalEmbeddingProvider(EmbeddingProvider):
         """
         try:
             embedding = self._model.encode(text, convert_to_numpy=True)
-            return embedding.tolist()
+            return cast(list[float], embedding.tolist())
         except Exception as e:
             raise EmbeddingError(f"Failed to generate embedding: {e}", e)
 
@@ -113,7 +115,7 @@ class LocalEmbeddingProvider(EmbeddingProvider):
             # Some models have special query encoding
             if hasattr(self._model, "encode_queries"):
                 embedding = self._model.encode_queries([query], convert_to_numpy=True)
-                return embedding[0].tolist()
+                return cast(list[float], embedding[0].tolist())
             return self.embed(query)
         except Exception as e:
             raise EmbeddingError(f"Failed to generate query embedding: {e}", e)
@@ -133,7 +135,7 @@ class LocalEmbeddingProvider(EmbeddingProvider):
             # Some models have special document encoding
             if hasattr(self._model, "encode_corpus"):
                 embedding = self._model.encode_corpus([document], convert_to_numpy=True)
-                return embedding[0].tolist()
+                return cast(list[float], embedding[0].tolist())
             return self.embed(document)
         except Exception as e:
             raise EmbeddingError(f"Failed to generate document embedding: {e}", e)
