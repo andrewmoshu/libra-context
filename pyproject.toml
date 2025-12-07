@@ -74,9 +74,9 @@ local = [
 libra = "libra.interfaces.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/libra-context/libra"
-Documentation = "https://libra-context.io/docs"
-Repository = "https://github.com/libra-context/libra"
+Homepage = "https://github.com/andrewmoshu/libra-context"
+Documentation = "https://github.com/andrewmoshu/libra-context"
+Repository = "https://github.com/andrewmoshu/libra-context"
 
 [build-system]
 requires = ["hatchling"]

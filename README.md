@@ -21,8 +21,8 @@ libra is a local-first context orchestration platform that acts as an intelligen
 
 ```bash
 # Clone the repository
-git clone https://github.com/libra-context/libra
-cd libra
+git clone https://github.com/andrewmoshu/libra-context
+cd libra-context
 
 # Create virtual environment and install
 python -m venv .venv
