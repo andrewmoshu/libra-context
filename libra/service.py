@@ -12,7 +12,6 @@ from typing import Any
 from uuid import UUID
 
 from libra.core.config import LibraConfig
-from libra.core.exceptions import LibraError
 from libra.core.models import (
     AuditEntry,
     Context,
@@ -22,7 +21,7 @@ from libra.core.models import (
     RequestSource,
 )
 from libra.embedding.base import EmbeddingProvider
-from libra.embedding.gemini import GeminiEmbeddingProvider
+from libra.embedding.factory import create_embedding_provider
 from libra.ingestion.chunker import Chunker
 from libra.ingestion.directory import DirectoryIngestor
 from libra.ingestion.markdown import MarkdownIngestor
@@ -90,27 +89,29 @@ class LibraService:
 
     @property
     def embedding_provider(self) -> EmbeddingProvider:
-        """Get the embedding provider, initializing if needed."""
+        """Get the embedding provider, initializing if needed.
+
+        Uses the factory to create the appropriate provider based on config.
+        Supports: gemini, openai, ollama, local, azure_openai, aws_bedrock,
+        huggingface, together, custom.
+        """
         if self._embedding_provider is None:
-            if self.config.embedding.provider == "gemini":
-                self._embedding_provider = GeminiEmbeddingProvider(
-                    model=self.config.embedding.model,
-                    output_dimensionality=self.config.embedding.dimensions,
-                )
-            else:
-                raise LibraError(
-                    f"Unknown embedding provider: {self.config.embedding.provider}"
-                )
+            self._embedding_provider = create_embedding_provider(self.config.embedding)
         return self._embedding_provider
 
     @property
     def librarian(self) -> Librarian:
-        """Get the librarian, initializing if needed."""
+        """Get the librarian, initializing if needed.
+
+        Uses the factory to create the appropriate librarian based on config.
+        Supports multiple LLM providers: gemini, openai, anthropic, ollama,
+        azure_openai, aws_bedrock, huggingface, together, custom.
+        """
         if self._librarian is None:
             self._librarian = create_librarian(
                 mode=self.config.librarian.mode.value,
                 rules=self.config.librarian.rules or LibraConfig.default_rules(),
-                gemini_model=self.config.librarian.llm.model,
+                llm_config=self.config.librarian.llm,
             )
         return self._librarian
 
