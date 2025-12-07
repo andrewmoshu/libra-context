@@ -3,8 +3,8 @@
 import json
 import os
 
-import google.generativeai as genai
-from google.generativeai.types import GenerationConfig
+from google import genai
+from google.genai import types
 
 from libra.core.exceptions import LibrarianError
 from libra.core.models import Context, ContextRequest, ScoredContext
@@ -61,7 +61,7 @@ class GeminiLibrarian(Librarian):
 
         Args:
             model: Gemini model to use
-            api_key: Google AI API key (or use GOOGLE_AI_API_KEY env var)
+            api_key: Google AI API key (or use GOOGLE_AI_API_KEY/GEMINI_API_KEY env var)
             max_candidates_per_request: Maximum candidates to evaluate per LLM call
             min_score: Minimum score to include in results
         """
@@ -69,21 +69,20 @@ class GeminiLibrarian(Librarian):
         self.max_candidates = max_candidates_per_request
         self.min_score = min_score
 
-        # Configure the API
-        api_key = api_key or os.environ.get("GOOGLE_AI_API_KEY")
+        # Get API key from parameter or environment
+        api_key = api_key or os.environ.get("GOOGLE_AI_API_KEY") or os.environ.get("GEMINI_API_KEY")
         if not api_key:
             raise LibrarianError(
-                "GOOGLE_AI_API_KEY environment variable is required for Gemini Librarian"
+                "GOOGLE_AI_API_KEY or GEMINI_API_KEY environment variable is required for Gemini Librarian"
             )
-        genai.configure(api_key=api_key)
 
-        # Initialize the model
-        self.model = genai.GenerativeModel(
-            model_name=model,
-            generation_config=GenerationConfig(
-                response_mime_type="application/json",
-                temperature=0.1,  # Low temperature for consistent scoring
-            ),
+        # Initialize the client
+        self._client = genai.Client(api_key=api_key)
+
+        # Store generation config for reuse
+        self._generation_config = types.GenerateContentConfig(
+            response_mime_type="application/json",
+            temperature=0.1,  # Low temperature for consistent scoring
         )
 
     def select(
@@ -119,7 +118,11 @@ class GeminiLibrarian(Librarian):
         prompt = SELECTION_PROMPT.format(task=request.task, contexts=contexts_text)
 
         try:
-            response = self.model.generate_content(prompt)
+            response = self._client.models.generate_content(
+                model=self.model_name,
+                contents=prompt,
+                config=self._generation_config,
+            )
             selections = self._parse_response(response.text, filtered)
 
             # Filter by minimum score and sort
