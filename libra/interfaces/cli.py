@@ -625,17 +625,19 @@ def chat_command(
     """
     import os
 
-    import google.generativeai as genai
+    from google import genai
+    from google.genai import types
 
     service = get_service()
 
     # Check for API key
-    api_key = os.environ.get("GOOGLE_AI_API_KEY")
+    api_key = os.environ.get("GOOGLE_AI_API_KEY") or os.environ.get("GEMINI_API_KEY")
     if not api_key:
-        console.print("[red]GOOGLE_AI_API_KEY environment variable is required for chat mode.[/red]")
+        console.print("[red]GOOGLE_AI_API_KEY or GEMINI_API_KEY environment variable is required for chat mode.[/red]")
         raise typer.Exit(1)
 
-    genai.configure(api_key=api_key)
+    # Initialize the client
+    client = genai.Client(api_key=api_key)
 
     # Get stats for system context
     stats = service.get_stats()
@@ -661,12 +663,13 @@ You can help users:
 Be helpful, concise, and proactive in suggesting how to improve their context library.
 When asked about specific topics, you can search the knowledge base and provide relevant information."""
 
-    # Initialize chat model
-    model = genai.GenerativeModel(
-        model_name=service.config.librarian.llm.model,
-        system_instruction=system_prompt,
+    # Initialize chat session with the new SDK
+    chat = client.chats.create(
+        model=service.config.librarian.llm.model,
+        config=types.GenerateContentConfig(
+            system_instruction=system_prompt,
+        ),
     )
-    chat = model.start_chat()
 
     console.print(Panel(
         f"[blue]Welcome to libra Chat![/blue]\n\n"
