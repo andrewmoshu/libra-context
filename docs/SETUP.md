@@ -27,9 +27,20 @@
 
 ### API Requirements
 
-- **Google AI API Key**: Required for Gemini LLM and embeddings
-  - Get one at: https://ai.google.dev/
-  - Free tier: 15 requests/minute for LLM, 1500/minute for embeddings
+libra supports multiple LLM and embedding providers. You need an API key for at least one provider:
+
+| Provider | API Key Environment Variable | Get API Key |
+|----------|------------------------------|-------------|
+| **Google Gemini** (default) | `GOOGLE_AI_API_KEY` or `GEMINI_API_KEY` | https://ai.google.dev/ |
+| **OpenAI** | `OPENAI_API_KEY` | https://platform.openai.com/ |
+| **Anthropic** | `ANTHROPIC_API_KEY` | https://console.anthropic.com/ |
+| **Azure OpenAI** | `AZURE_OPENAI_API_KEY` | https://portal.azure.com/ |
+| **AWS Bedrock** | AWS credentials (profile/keys) | https://aws.amazon.com/bedrock/ |
+| **HuggingFace** | `HUGGINGFACE_API_KEY` or `HF_TOKEN` | https://huggingface.co/settings/tokens |
+| **Together AI** | `TOGETHER_API_KEY` | https://api.together.xyz/ |
+| **Ollama** | None (local) | https://ollama.ai/ |
+
+**Note**: Gemini is the default provider and offers a generous free tier (15 RPM for LLM, 1500 RPM for embeddings).
 
 ---
 
@@ -81,27 +92,79 @@ uv run libra --help
 
 ## Configuration
 
-### Step 1: Set API Key
+### Step 1: Set API Key (Optional if using interactive init)
 
 ```bash
-# Set Google AI API key (required)
-export GOOGLE_API_KEY="your-api-key-here"
+# Set Google AI API key (default provider)
+export GOOGLE_AI_API_KEY="your-api-key-here"
 
-# Or add to your shell profile (~/.bashrc, ~/.zshrc)
-echo 'export GOOGLE_API_KEY="your-api-key-here"' >> ~/.zshrc
+# Or for other providers:
+export OPENAI_API_KEY="your-key"      # OpenAI
+export ANTHROPIC_API_KEY="your-key"   # Anthropic Claude
+export TOGETHER_API_KEY="your-key"    # Together AI
+export HUGGINGFACE_API_KEY="your-key" # HuggingFace
+
+# Add to your shell profile (~/.bashrc, ~/.zshrc) for persistence
+echo 'export GOOGLE_AI_API_KEY="your-api-key-here"' >> ~/.zshrc
 ```
 
-### Step 2: Initialize libra
+### Step 2: Initialize libra (Interactive)
+
+libra includes an interactive setup wizard that guides you through selecting providers and configuring API keys:
 
 ```bash
-# Create config directory and default configuration
+# Interactive setup (recommended)
 libra init
+```
+
+The wizard will:
+1. Display available LLM providers and let you select one
+2. Display available embedding providers and let you select one
+3. Prompt for API keys (with secure hidden input)
+4. Configure provider-specific settings (Ollama URL, Azure endpoint, AWS region, etc.)
+5. Save configuration to `~/.libra/config.yaml`
+
+**Quick setup with defaults (non-interactive):**
+
+```bash
+# Use default Gemini provider (requires GOOGLE_AI_API_KEY)
+libra init -y
 ```
 
 This creates:
 - `~/.libra/` - Data directory
 - `~/.libra/config.yaml` - Configuration file
 - `~/.libra/libra.db` - SQLite database
+
+### Supported Providers
+
+#### LLM Providers (for intelligent context selection)
+
+| Provider | Default Model | Notes |
+|----------|---------------|-------|
+| **gemini** | gemini-2.5-flash | Default. Fast, high-quality, generous free tier |
+| **openai** | gpt-4o-mini | Industry standard, excellent reasoning |
+| **anthropic** | claude-3-5-haiku-latest | Fast and capable |
+| **ollama** | llama3.2 | Fully local, no API key needed |
+| **azure_openai** | gpt-4o-mini | Enterprise Azure deployment |
+| **aws_bedrock** | anthropic.claude-3-5-haiku-20241022-v1:0 | AWS managed service |
+| **huggingface** | meta-llama/Llama-3.2-3B-Instruct | HuggingFace Inference API |
+| **together** | meta-llama/Llama-3.2-3B-Instruct-Turbo | Fast inference |
+| **custom** | configurable | Any OpenAI-compatible endpoint |
+
+#### Embedding Providers (for semantic search)
+
+| Provider | Default Model | Dimensions | Notes |
+|----------|---------------|------------|-------|
+| **gemini** | gemini-embedding-001 | 768 | Default. Excellent quality |
+| **openai** | text-embedding-3-small | 1536 | Industry standard |
+| **ollama** | nomic-embed-text | 768 | Local embeddings |
+| **local** | all-MiniLM-L6-v2 | 384 | Fully offline (sentence-transformers) |
+| **azure_openai** | text-embedding-3-small | 1536 | Enterprise Azure |
+| **aws_bedrock** | amazon.titan-embed-text-v2:0 | 1024 | AWS managed |
+| **huggingface** | sentence-transformers/all-MiniLM-L6-v2 | 384 | HuggingFace API |
+| **together** | togethercomputer/m2-bert-80M-8k-retrieval | 768 | Together AI |
+| **custom** | configurable | configurable | Custom HTTP endpoint |
 
 ### Step 3: Verify Setup
 
@@ -122,14 +185,22 @@ Location: `~/.libra/config.yaml`
 librarian:
   mode: hybrid
   llm:
-    provider: gemini
+    provider: gemini  # gemini, openai, anthropic, ollama, azure_openai, aws_bedrock, huggingface, together, custom
     model: gemini-2.5-flash
+    # api_key: set via environment variable (recommended) or here
+    # base_url: for ollama or custom endpoints
+    # azure_endpoint: for azure_openai
+    # azure_deployment: for azure_openai
+    # aws_region: for aws_bedrock
+    # aws_profile: for aws_bedrock
 
 # Embedding configuration
 embedding:
-  provider: gemini
+  provider: gemini  # gemini, openai, ollama, local, azure_openai, aws_bedrock, huggingface, together, custom
   model: gemini-embedding-001
   dimensions: 768
+  # api_key: set via environment variable (recommended) or here
+  # base_url: for ollama or custom endpoints
 
 # Default values
 defaults:
@@ -141,6 +212,64 @@ defaults:
 server:
   http_port: 8377
   http_host: 127.0.0.1
+```
+
+### Provider-Specific Configuration Examples
+
+**Ollama (fully local):**
+```yaml
+librarian:
+  llm:
+    provider: ollama
+    model: llama3.2
+    base_url: http://localhost:11434
+embedding:
+  provider: ollama
+  model: nomic-embed-text
+  base_url: http://localhost:11434
+```
+
+**OpenAI:**
+```yaml
+librarian:
+  llm:
+    provider: openai
+    model: gpt-4o-mini
+    # api_key from OPENAI_API_KEY env var
+embedding:
+  provider: openai
+  model: text-embedding-3-small
+  dimensions: 1536
+```
+
+**Azure OpenAI:**
+```yaml
+librarian:
+  llm:
+    provider: azure_openai
+    model: gpt-4o-mini
+    azure_endpoint: https://your-resource.openai.azure.com/
+    azure_deployment: your-deployment-name
+    api_version: "2024-02-01"
+embedding:
+  provider: azure_openai
+  model: text-embedding-3-small
+  azure_endpoint: https://your-resource.openai.azure.com/
+  azure_deployment: your-embedding-deployment
+```
+
+**AWS Bedrock:**
+```yaml
+librarian:
+  llm:
+    provider: aws_bedrock
+    model: anthropic.claude-3-5-haiku-20241022-v1:0
+    aws_region: us-east-1
+    aws_profile: default  # optional
+embedding:
+  provider: aws_bedrock
+  model: amazon.titan-embed-text-v2:0
+  aws_region: us-east-1
 ```
 
 ---
