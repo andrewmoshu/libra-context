@@ -392,7 +392,7 @@ To get relevant context for a task, use the `get_context` tool with a descriptio
 To add new context, use the `remember` tool with the content you want to save."""
 
 
-def run_mcp_server():
+def run_mcp_server() -> None:
     """Run the MCP server in stdio mode."""
     mcp.run()
 
