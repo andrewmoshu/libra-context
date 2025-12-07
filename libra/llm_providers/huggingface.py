@@ -1,6 +1,7 @@
 """HuggingFace Inference API LLM provider."""
 
 import os
+from typing import Any, cast
 
 import httpx
 
@@ -69,17 +70,18 @@ class HuggingFaceLLMProvider(LLMProvider):
             if json_mode:
                 prompt = f"{prompt}\n\nRespond with valid JSON only. No additional text."
 
-            payload = {
+            parameters: dict[str, Any] = {
+                "temperature": temperature,
+                "return_full_text": False,
+            }
+            if max_tokens is not None:
+                parameters["max_new_tokens"] = max_tokens
+
+            payload: dict[str, Any] = {
                 "inputs": prompt,
-                "parameters": {
-                    "temperature": temperature,
-                    "return_full_text": False,
-                },
+                "parameters": parameters,
                 "options": {"wait_for_model": True},
             }
-
-            if max_tokens is not None:
-                payload["parameters"]["max_new_tokens"] = max_tokens
 
             response = self._client.post(
                 self._base_url,
@@ -94,7 +96,7 @@ class HuggingFaceLLMProvider(LLMProvider):
 
             # HuggingFace returns a list of generated texts
             if isinstance(data, list) and data:
-                return data[0].get("generated_text", "")
+                return cast(str, data[0].get("generated_text", ""))
             return str(data)
 
         except httpx.HTTPStatusError as e:
