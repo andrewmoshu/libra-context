@@ -39,8 +39,8 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/libra-context/libra
-cd libra
+git clone https://github.com/andrewmoshu/libra-context
+cd libra-context
 
 # Create and activate virtual environment
 python -m venv .venv
@@ -66,8 +66,8 @@ pip install libra-context
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Clone and setup
-git clone https://github.com/libra-context/libra
-cd libra
+git clone https://github.com/andrewmoshu/libra-context
+cd libra-context
 uv sync
 
 # Run commands with uv
@@ -682,7 +682,7 @@ log_level: DEBUG
 1. Check the documentation: `docs/HLD.md`, `docs/LLD.md`
 2. View API docs: http://localhost:8377/docs
 3. Ask Claude with libra context: "Using libra, explain how context selection works"
-4. Open an issue: https://github.com/libra-context/libra/issues
+4. Open an issue: https://github.com/andrewmoshu/libra-context/issues
 
 ---
 
