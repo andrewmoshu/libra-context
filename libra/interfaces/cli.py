@@ -378,12 +378,14 @@ def serve(
             console.print("[red]FastAPI not installed. Install with: pip install fastapi uvicorn[/red]")
             raise typer.Exit(1)
     else:
-        console.print("[blue]Starting MCP server (stdio mode)...[/blue]")
+        # Don't print to stdout in MCP mode - it uses stdio for JSON-RPC communication
         try:
             from libra.interfaces.mcp_server import run_mcp_server
             run_mcp_server()
         except ImportError as e:
-            console.print(f"[red]MCP SDK not installed: {e}[/red]")
+            # Print to stderr instead of stdout
+            import sys
+            print(f"MCP SDK not installed: {e}", file=sys.stderr)
             raise typer.Exit(1)
 
 

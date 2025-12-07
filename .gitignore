@@ -4,15 +4,73 @@ source/
 # Claude Code working directory
 .agent/
 
+# Libra data directory
+.data/
+.libra/
+
 # Build artifacts
 target/node_modules/
 target/package-lock.json
 *.log
 
-# Python
+# Python virtual environments
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Python cache and build files
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Testing and linting cache
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.cache/
+.tox/
+.coverage
+.coverage.*
+htmlcov/
+.hypothesis/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment
 .env
+.env.local
+.env.*.local
 
 # OS
 .DS_Store
+Thumbs.db
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
