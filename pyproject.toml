@@ -32,8 +32,9 @@ dependencies = [
     "pydantic>=2.0.0",
     "pyyaml>=6.0",
 
-    # Gemini AI (primary LLM and embedding provider)
-    "google-generativeai>=0.8.0",
+    # Google GenAI SDK (primary LLM and embedding provider)
+    # Using the new unified SDK (google-genai) instead of deprecated google-generativeai
+    "google-genai>=1.0.0",
 
     # SQLite with vector search
     "sqlite-vec>=0.1.0",
