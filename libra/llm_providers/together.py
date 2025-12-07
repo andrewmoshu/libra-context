@@ -1,7 +1,7 @@
 """Together AI LLM provider."""
 
 import os
-from typing import Any
+from typing import Any, cast
 
 import httpx
 
@@ -94,7 +94,7 @@ class TogetherLLMProvider(LLMProvider):
             choices = data.get("choices", [])
             if choices:
                 message = choices[0].get("message", {})
-                return message.get("content", "")
+                return cast(str, message.get("content", ""))
             return ""
 
         except httpx.HTTPStatusError as e:
