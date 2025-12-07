@@ -6,7 +6,8 @@ libra is a local-first context orchestration platform that acts as an intelligen
 
 ## Features
 
-- **Intelligent Context Selection**: Uses Gemini-powered reasoning to select relevant context, not just embedding similarity
+- **Intelligent Context Selection**: LLM-powered reasoning to select relevant context, not just embedding similarity
+- **Multi-Provider Support**: Works with Gemini, OpenAI, Anthropic, Ollama, Azure, AWS Bedrock, HuggingFace, Together AI, and custom endpoints
 - **Token Budget Management**: Fits context within token limits while maximizing relevance
 - **Multiple Librarian Modes**: Rules-based (fast), LLM-based (smart), or Hybrid (balanced)
 - **MCP Integration**: Works with Claude Desktop, Cursor, Continue.dev, and other MCP clients
@@ -14,6 +15,7 @@ libra is a local-first context orchestration platform that acts as an intelligen
 - **CLI**: Complete command-line interface for management
 - **Web UI**: Browser-based dashboard for visual management
 - **Audit Logging**: Complete trail of what context was served to which agent
+- **Local-First**: All data stays on your machine with optional fully-local operation (Ollama + sentence-transformers)
 
 ## Quick Start
 
@@ -42,12 +44,19 @@ uv sync
 ### Configuration
 
 ```bash
-# Set your Gemini API key
-export GOOGLE_API_KEY="your-api-key-here"
+# Set your API key (Gemini is default, or choose another provider)
+export GOOGLE_AI_API_KEY="your-api-key-here"  # For Gemini (default)
+# Or: export OPENAI_API_KEY="..."   # For OpenAI
+# Or: export ANTHROPIC_API_KEY="..." # For Anthropic
 
-# Initialize libra (creates ~/.libra/ directory)
+# Initialize libra with interactive setup wizard
 libra init
+
+# Or quick setup with defaults (uses Gemini)
+libra init -y
 ```
+
+The interactive `libra init` guides you through selecting LLM and embedding providers from 9 supported options each.
 
 ### Basic Usage
 
@@ -90,6 +99,36 @@ Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_
 ```
 
 Restart Claude Desktop to enable the integration.
+
+## Supported Providers
+
+libra supports 9 LLM providers and 9 embedding providers for maximum flexibility:
+
+### LLM Providers
+| Provider | Key Environment Variable | Notes |
+|----------|-------------------------|-------|
+| **gemini** | `GOOGLE_AI_API_KEY` | Default. Fast, high-quality, generous free tier |
+| **openai** | `OPENAI_API_KEY` | Industry standard GPT models |
+| **anthropic** | `ANTHROPIC_API_KEY` | Claude models |
+| **ollama** | None (local) | Fully local, no API key needed |
+| **azure_openai** | `AZURE_OPENAI_API_KEY` | Enterprise Azure deployment |
+| **aws_bedrock** | AWS credentials | AWS managed service |
+| **huggingface** | `HF_TOKEN` | HuggingFace Inference API |
+| **together** | `TOGETHER_API_KEY` | Fast inference |
+| **custom** | Configurable | Any OpenAI-compatible endpoint |
+
+### Embedding Providers
+| Provider | Default Model | Notes |
+|----------|---------------|-------|
+| **gemini** | gemini-embedding-001 | Default. Excellent quality |
+| **openai** | text-embedding-3-small | Industry standard |
+| **ollama** | nomic-embed-text | Local embeddings |
+| **local** | all-MiniLM-L6-v2 | Fully offline (sentence-transformers) |
+| **azure_openai** | text-embedding-3-small | Enterprise Azure |
+| **aws_bedrock** | amazon.titan-embed-text-v2:0 | AWS managed |
+| **huggingface** | sentence-transformers/all-MiniLM-L6-v2 | HuggingFace API |
+| **together** | togethercomputer/m2-bert-80M-8k-retrieval | Together AI |
+| **custom** | Configurable | Custom HTTP endpoint |
 
 ## Context Types
 
@@ -155,11 +194,15 @@ Configuration file: `~/.libra/config.yaml`
 librarian:
   mode: hybrid  # rules, llm, or hybrid
   llm:
-    provider: gemini
+    provider: gemini  # gemini, openai, anthropic, ollama, azure_openai, aws_bedrock, huggingface, together, custom
     model: gemini-2.5-flash
+    # api_key: set via env var (recommended) or here
+    # base_url: for ollama/custom endpoints
+    # azure_endpoint: for azure_openai
+    # aws_region: for aws_bedrock
 
 embedding:
-  provider: gemini
+  provider: gemini  # gemini, openai, ollama, local, azure_openai, aws_bedrock, huggingface, together, custom
   model: gemini-embedding-001
   dimensions: 768
 
@@ -172,6 +215,8 @@ server:
   http_port: 8377
   http_host: 127.0.0.1
 ```
+
+See [Setup Guide](docs/SETUP.md) for detailed provider configuration examples.
 
 ## Python API
 
@@ -221,7 +266,7 @@ black libra/ tests/
 
 - **Python 3.11+**
 - **SQLite + sqlite-vec**: Local storage with vector search
-- **Gemini**: LLM and embedding provider
+- **Multi-provider support**: Gemini (default), OpenAI, Anthropic, Ollama, Azure, AWS Bedrock, HuggingFace, Together AI, custom endpoints
 - **FastAPI**: REST API
 - **Typer**: CLI framework
 - **MCP SDK**: Agent integration protocol
