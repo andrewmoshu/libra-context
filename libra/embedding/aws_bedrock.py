@@ -82,7 +82,7 @@ class AWSBedrockEmbeddingProvider(EmbeddingProvider):
         if dimensions is not None:
             self._dimensions = dimensions
         else:
-            self._dimensions = self._config.get("dimensions", 1024)
+            self._dimensions = int(self._config.get("dimensions", 1024))
 
         # Get region
         region = region or os.environ.get("AWS_DEFAULT_REGION", "us-east-1")
