@@ -35,7 +35,16 @@
 
 ## Installation
 
-### Option 1: From Source (Recommended for Development)
+### Option 1: Using pip (Recommended)
+
+```bash
+pip install libra-context
+
+# Verify installation
+libra --help
+```
+
+### Option 2: From Source (For Development)
 
 ```bash
 # Clone the repository
@@ -51,12 +60,6 @@ pip install -e .
 
 # Verify installation
 libra --help
-```
-
-### Option 2: Using pip (When Published)
-
-```bash
-pip install libra-context
 ```
 
 ### Option 3: Using UV (Fast Package Manager)

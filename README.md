@@ -19,15 +19,24 @@ libra is a local-first context orchestration platform that acts as an intelligen
 
 ### Installation
 
+**From PyPI (recommended):**
+
+```bash
+pip install libra-context
+```
+
+**From source:**
+
 ```bash
 # Clone the repository
 git clone https://github.com/andrewmoshu/libra-context
 cd libra-context
 
-# Create virtual environment and install
-python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+# Install with pip
 pip install -e .
+
+# Or with UV
+uv sync
 ```
 
 ### Configuration
