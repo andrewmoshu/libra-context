@@ -1,7 +1,7 @@
 """Custom HTTP endpoint embedding provider."""
 
 import os
-from typing import Any
+from typing import Any, cast
 
 import httpx
 
@@ -111,10 +111,10 @@ class CustomEmbeddingProvider(EmbeddingProvider):
                 # OpenAI format: {"data": [{"embedding": [...], "index": 0}, ...]}
                 embeddings_data = data.get("data", [])
                 sorted_data = sorted(embeddings_data, key=lambda x: x.get("index", 0))
-                return [item.get("embedding", []) for item in sorted_data]
+                return cast(list[list[float]], [item.get("embedding", []) for item in sorted_data])
             else:
                 # Simple format: {"embeddings": [[...], ...]}
-                return data.get("embeddings", [])
+                return cast(list[list[float]], data.get("embeddings", []))
 
         except httpx.HTTPStatusError as e:
             raise EmbeddingError(
