@@ -166,6 +166,70 @@ def show_context(
     ))
 
 
+@app.command("edit")
+def edit_context(
+    context_id: str = typer.Argument(..., help="Context ID to edit"),
+    content: Optional[str] = typer.Option(None, "--content", "-c", help="New content"),
+    tags: Optional[str] = typer.Option(None, "--tags", help="New tags (comma-separated)"),
+    editor_mode: bool = typer.Option(False, "--editor", "-e", help="Open content in editor"),
+) -> None:
+    """Edit an existing context."""
+    import os
+    import tempfile
+
+    service = get_service()
+
+    try:
+        context = service.get_context(context_id)
+    except Exception:
+        console.print(f"[red]Context not found: {context_id}[/red]")
+        raise typer.Exit(1)
+
+    new_content = content
+    new_tags = [t.strip() for t in tags.split(",")] if tags else None
+
+    # If editor mode, open content in editor
+    if editor_mode:
+        editor = os.environ.get("EDITOR", "vim")
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f:
+            f.write(context.content)
+            temp_path = f.name
+
+        try:
+            import subprocess
+            result = subprocess.run([editor, temp_path], check=False)
+            if result.returncode == 0:
+                with open(temp_path) as f:
+                    new_content = f.read()
+        finally:
+            os.unlink(temp_path)
+
+    if new_content is None and new_tags is None:
+        console.print("[yellow]No changes specified. Use --content, --tags, or --editor.[/yellow]")
+        raise typer.Exit(1)
+
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        console=console,
+    ) as progress:
+        progress.add_task("Updating context...", total=None)
+        updated = service.update_context(
+            context_id=context_id,
+            content=new_content,
+            tags=new_tags,
+        )
+
+    console.print(Panel(
+        f"[green]Context updated successfully![/green]\n\n"
+        f"ID: {updated.id}\n"
+        f"Type: {updated.type}\n"
+        f"Tags: {', '.join(updated.tags) if updated.tags else 'none'}\n"
+        f"Content: {updated.content[:100]}{'...' if len(updated.content) > 100 else ''}",
+        title="✓ Updated",
+    ))
+
+
 @app.command("delete")
 def delete_context(
     context_id: str = typer.Argument(..., help="Context ID to delete"),
