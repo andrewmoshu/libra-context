@@ -2,7 +2,7 @@
 
 import json
 import os
-from typing import Any
+from typing import Any, cast
 
 from libra.core.exceptions import LibrarianError
 from libra.llm_providers.base import LLMProvider
@@ -129,19 +129,19 @@ class AWSBedrockLLMProvider(LLMProvider):
         if format_type == "anthropic":
             content = response_body.get("content", [])
             if content and isinstance(content, list):
-                return content[0].get("text", "")
+                return cast(str, content[0].get("text", ""))
             return ""
         elif format_type == "titan":
             results = response_body.get("results", [])
             if results:
-                return results[0].get("outputText", "")
+                return cast(str, results[0].get("outputText", ""))
             return ""
         elif format_type == "llama":
-            return response_body.get("generation", "")
+            return cast(str, response_body.get("generation", ""))
         elif format_type == "mistral":
             outputs = response_body.get("outputs", [])
             if outputs:
-                return outputs[0].get("text", "")
+                return cast(str, outputs[0].get("text", ""))
             return ""
         else:
             return str(response_body)
