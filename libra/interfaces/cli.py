@@ -55,7 +55,7 @@ def add_context(
         None, "--tags", help="Comma-separated tags"
     ),
     source: str = typer.Option("manual", "--source", "-s", help="Source identifier"),
-):
+) -> None:
     """Add a new context to libra."""
     service = get_service()
 
@@ -95,7 +95,7 @@ def list_contexts(
     tags: Optional[str] = typer.Option(None, "--tags", help="Filter by tags (comma-separated)"),
     limit: int = typer.Option(20, "--limit", "-n", help="Maximum results"),
     json_output: bool = typer.Option(False, "--json", help="Output as JSON"),
-):
+) -> None:
     """List contexts with optional filtering."""
     service = get_service()
 
@@ -145,7 +145,7 @@ def list_contexts(
 @app.command("show")
 def show_context(
     context_id: str = typer.Argument(..., help="Context ID to show"),
-):
+) -> None:
     """Display details of a specific context."""
     service = get_service()
 
@@ -172,7 +172,7 @@ def show_context(
 def delete_context(
     context_id: str = typer.Argument(..., help="Context ID to delete"),
     force: bool = typer.Option(False, "--force", "-f", help="Skip confirmation"),
-):
+) -> None:
     """Delete a context by ID."""
     service = get_service()
 
@@ -199,7 +199,7 @@ def query_context(
     type: Optional[str] = typer.Option(None, "--type", "-t", help="Filter by type"),
     tags: Optional[str] = typer.Option(None, "--tags", help="Filter by tags"),
     json_output: bool = typer.Option(False, "--json", help="Output as JSON"),
-):
+) -> None:
     """Get relevant context for a task."""
     service = get_service()
 
@@ -264,7 +264,7 @@ def search_contexts(
     query: str = typer.Argument(..., help="Search query"),
     limit: int = typer.Option(10, "--limit", "-n", help="Maximum results"),
     type: Optional[str] = typer.Option(None, "--type", "-t", help="Filter by type"),
-):
+) -> None:
     """Search contexts by semantic similarity."""
     service = get_service()
 
@@ -315,7 +315,7 @@ def ingest(
     ),
     tags: Optional[str] = typer.Option(None, "--tags", help="Comma-separated tags"),
     watch: bool = typer.Option(False, "--watch", "-w", help="Watch for changes (not yet implemented)"),
-):
+) -> None:
     """Ingest a file or directory."""
     service = get_service()
 
@@ -367,7 +367,7 @@ def serve(
     port: int = typer.Option(8377, "--port", "-p", help="HTTP port"),
     host: str = typer.Option("127.0.0.1", "--host", help="HTTP host"),
     all_servers: bool = typer.Option(False, "--all", help="Start both MCP and HTTP"),
-):
+) -> None:
     """Start the libra server (MCP stdio mode by default)."""
     if http or all_servers:
         console.print(f"[blue]Starting HTTP server on {host}:{port}...[/blue]")
@@ -395,7 +395,7 @@ def audit(
     agent: Optional[str] = typer.Option(None, "--agent", "-a", help="Filter by agent"),
     limit: int = typer.Option(20, "--limit", "-n", help="Maximum results"),
     export: bool = typer.Option(False, "--export", help="Export as JSON"),
-):
+) -> None:
     """View audit log entries."""
     service = get_service()
 
@@ -449,7 +449,7 @@ app.add_typer(config_app, name="config")
 
 
 @config_app.command("show")
-def config_show():
+def config_show() -> None:
     """Display current configuration."""
     service = get_service()
     config = service.config
@@ -480,7 +480,7 @@ def config_show():
 def config_set(
     key: str = typer.Argument(..., help="Configuration key (e.g., librarian.mode)"),
     value: str = typer.Argument(..., help="Value to set"),
-):
+) -> None:
     """Set a configuration value."""
     service = get_service()
     config = service.config
@@ -503,7 +503,7 @@ def config_set(
 
 
 @config_app.command("edit")
-def config_edit():
+def config_edit() -> None:
     """Open configuration in editor."""
     import os
 
@@ -535,7 +535,7 @@ def config_edit():
 
 
 @app.command("stats")
-def stats():
+def stats() -> None:
     """Show storage statistics."""
     service = get_service()
     data = service.get_stats()
@@ -560,7 +560,7 @@ def export_contexts(
         "-o",
         help="Output file path",
     ),
-):
+) -> None:
     """Export all contexts to JSON."""
     service = get_service()
 
@@ -586,7 +586,7 @@ def export_contexts(
 @app.command("import")
 def import_contexts(
     input_file: Path = typer.Argument(..., help="JSON file to import"),
-):
+) -> None:
     """Import contexts from JSON."""
     service = get_service()
 
@@ -613,7 +613,7 @@ def import_contexts(
 
 
 @app.command("init")
-def init():
+def init() -> None:
     """Initialize libra (create config directory and default config)."""
     config = LibraConfig()
     config.ensure_data_dir()
@@ -636,7 +636,7 @@ def create_cli_app() -> typer.Typer:
     return app
 
 
-def main():
+def main() -> None:
     """Main entry point for the CLI."""
     app()
 
