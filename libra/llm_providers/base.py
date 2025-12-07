@@ -1,7 +1,7 @@
 """Base class for LLM providers used by the Librarian."""
 
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, cast
 
 
 class LLMProvider(ABC):
@@ -78,6 +78,6 @@ class LLMProvider(ABC):
                 text = text[:-3]
             text = text.strip()
 
-            return json.loads(text)
+            return cast(dict[str, Any], json.loads(text))
         except json.JSONDecodeError as e:
             raise ValueError(f"Failed to parse JSON response: {e}\nResponse: {response}")
