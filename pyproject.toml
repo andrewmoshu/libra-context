@@ -1,6 +1,6 @@
 [project]
 name = "libra-context"
-version = "0.1.0"
+version = "0.1.0.2"
 description = "Intelligent Context Orchestration for AI Agents"
 readme = "README.md"
 requires-python = ">=3.11"
